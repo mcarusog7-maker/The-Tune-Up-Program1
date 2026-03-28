@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Tune-Up Program — Convierte tu taller en un negocio que funciona</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,400;0,700;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --cream: #F5F0E8; --cream-dark: #EDE7D9; --ink: #1A1714; --ink-soft: #3D3830;
+    --rust: #C4440A; --rust-light: #F5E8E0; --rust-mid: #E8805A;
+    --sand: #D4C9B0; --white: #FDFCFA;
+    --teal: #1D9E75; --teal-light: #E1F5EE;
+    --purple: #534AB7; --purple-light: #EEEDFE;
+    --font-display: 'Fraunces', Georgia, serif;
+    --font-body: 'DM Sans', sans-serif;
+  }
+  html { scroll-behavior: smooth; }
+  body { background: var(--cream); color: var(--ink); font-family: var(--font-body); font-size: 16px; line-height: 1.6; overflow-x: hidden; }
+
+  nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; padding: 20px 48px; display: flex; justify-content: space-between; align-items: center; background: rgba(245,240,232,0.93); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(212,201,176,0.4); }
+  .nav-logo { font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--ink); letter-spacing: -0.02em; }
+  .nav-logo span { color: var(--rust); }
+  .nav-cta { background: var(--ink); color: var(--cream); padding: 10px 24px; border-radius: 2px; font-size: 13px; font-weight: 500; letter-spacing: 0.04em; text-decoration: none; text-transform: uppercase; transition: background .2s; }
+  .nav-cta:hover { background: var(--rust); }
+
+  .hero { min-height: 100vh; padding: 140px 48px 100px; display: flex; flex-direction: column; justify-content: center; position: relative; overflow: hidden; }
+  .hero::before { content: ''; position: absolute; top: -100px; right: -200px; width: 700px; height: 700px; background: radial-gradient(circle, rgba(196,68,10,0.06) 0%, transparent 70%); pointer-events: none; }
+  .hero-eyebrow { font-size: 12px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: var(--rust); margin-bottom: 32px; display: flex; align-items: center; gap: 12px; }
+  .hero-eyebrow::before { content: ''; display: block; width: 32px; height: 1px; background: var(--rust); }
+  .hero-headline { font-family: var(--font-display); font-size: clamp(48px,7vw,88px); font-weight: 300; line-height: 1.05; letter-spacing: -0.03em; max-width: 900px; margin-bottom: 32px; }
+  .hero-headline em { font-style: italic; color: var(--rust); }
+  .hero-sub { font-size: 18px; font-weight: 300; color: var(--ink-soft); max-width: 560px; line-height: 1.7; margin-bottom: 56px; }
+  .hero-actions { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
+  .btn-primary { background: var(--rust); color: var(--white); padding: 16px 36px; border-radius: 2px; font-size: 14px; font-weight: 500; letter-spacing: 0.06em; text-decoration: none; text-transform: uppercase; transition: all .2s; border: none; cursor: pointer; }
+  .btn-primary:hover { background: #A03508; transform: translateY(-1px); }
+  .btn-ghost { color: var(--ink-soft); font-size: 14px; text-decoration: none; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid currentColor; padding-bottom: 2px; transition: color .2s; }
+  .btn-ghost:hover { color: var(--rust); }
+  .hero-note { margin-top: 80px; font-size: 13px; color: var(--sand); font-style: italic; font-family: var(--font-display); }
+
+  section { padding: 100px 48px; }
+  .section-label { font-size: 11px; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; color: var(--rust); margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+  .section-label::before { content: ''; display: block; width: 24px; height: 1px; background: var(--rust); }
+  .section-title { font-family: var(--font-display); font-size: clamp(34px,4vw,52px); font-weight: 300; line-height: 1.1; letter-spacing: -0.02em; max-width: 700px; margin-bottom: 24px; }
+  .section-title em { font-style: italic; color: var(--rust); }
+  .section-body { font-size: 17px; font-weight: 300; color: var(--ink-soft); max-width: 560px; line-height: 1.75; }
+
+  .pains { background: var(--ink); }
+  .pains .section-label { color: var(--rust-mid); }
+  .pains .section-label::before { background: var(--rust-mid); }
+  .pains .section-title { color: var(--cream); }
+  .pains .section-body { color: rgba(245,240,232,0.65); }
+  .pains-intro { max-width: 800px; margin-bottom: 64px; }
+  .pains-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 2px; }
+  .pain-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07); padding: 48px 36px; transition: background .3s; }
+  .pain-card:hover { background: rgba(255,255,255,0.07); }
+  .pain-number { font-family: var(--font-display); font-size: 72px; font-weight: 300; color: rgba(196,68,10,0.2); line-height: 1; margin-bottom: 24px; letter-spacing: -0.04em; }
+  .pain-title { font-family: var(--font-display); font-size: 26px; font-weight: 400; color: var(--cream); line-height: 1.2; margin-bottom: 20px; }
+  .pain-desc { font-size: 15px; font-weight: 300; color: rgba(245,240,232,0.55); line-height: 1.7; margin-bottom: 28px; }
+  .pain-quote { font-family: var(--font-display); font-style: italic; font-size: 14px; color: var(--rust-mid); padding-left: 16px; border-left: 2px solid var(--rust); line-height: 1.6; }
+
+  .diagnosis { background: var(--white); }
+  .diagnosis-intro { max-width: 680px; margin-bottom: 56px; }
+  .diag-tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 28px; }
+  .diag-tab { padding: 10px 22px; border-radius: 2px; font-size: 13px; font-weight: 500; cursor: pointer; border: 1px solid var(--sand); background: transparent; color: var(--ink-soft); transition: all .15s; }
+  .diag-tab.a0 { background: var(--rust-light); color: var(--rust); border-color: var(--rust); }
+  .diag-tab.a1 { background: var(--teal-light); color: #085041; border-color: var(--teal); }
+  .diag-tab.a2 { background: var(--purple-light); color: #26215C; border-color: var(--purple); }
+  .vpanel { display: none; flex-direction: column; gap: 10px; }
+  .vpanel.active { display: flex; }
+  .vheader { padding: 20px 24px; border-radius: 2px; margin-bottom: 8px; }
+  .v0 .vheader { background: var(--rust-light); }
+  .v1 .vheader { background: var(--teal-light); }
+  .v2 .vheader { background: var(--purple-light); }
+  .vh-tag { font-size: 11px; font-weight: 500; letter-spacing: .1em; text-transform: uppercase; margin: 0 0 6px; }
+  .v0 .vh-tag { color: #993C1D; } .v1 .vh-tag { color: #0F6E56; } .v2 .vh-tag { color: #534AB7; }
+  .vh-title { font-family: var(--font-display); font-size: 22px; font-weight: 400; margin: 0 0 6px; letter-spacing: -0.01em; }
+  .v0 .vh-title { color: #4A1B0C; } .v1 .vh-title { color: #04342C; } .v2 .vh-title { color: #26215C; }
+  .vh-sub { font-size: 14px; font-weight: 300; margin: 0; }
+  .v0 .vh-sub { color: #712B13; } .v1 .vh-sub { color: #085041; } .v2 .vh-sub { color: #3C3489; }
+  .lrow { display: grid; grid-template-columns: 36px 1fr auto; gap: 16px; align-items: start; padding: 18px 20px; background: var(--cream); border: 1.5px solid transparent; border-radius: 2px; cursor: pointer; transition: all .15s; }
+  .lrow:hover { background: var(--cream-dark); }
+  .lrow.sel { background: var(--white); }
+  .v0 .lrow.sel { border-color: var(--rust); }
+  .v1 .lrow.sel { border-color: var(--teal); }
+  .v2 .lrow.sel { border-color: var(--purple); }
+  .lnum { font-family: var(--font-display); font-size: 20px; font-weight: 300; color: var(--sand); line-height: 1.3; }
+  .v0 .lrow.sel .lnum { color: var(--rust); } .v1 .lrow.sel .lnum { color: var(--teal); } .v2 .lrow.sel .lnum { color: var(--purple); }
+  .lname { font-size: 15px; font-weight: 500; color: var(--ink); margin: 0 0 5px; }
+  .ldesc { font-size: 13px; color: var(--ink-soft); font-weight: 300; margin: 0 0 10px; line-height: 1.6; }
+  .lpills { display: flex; flex-wrap: wrap; gap: 5px; }
+  .pill { font-size: 11px; padding: 3px 9px; border-radius: 20px; }
+  .pill.y { background: var(--teal-light); color: #085041; }
+  .pill.n { background: var(--rust-light); color: #712B13; }
+  .lbadge { font-size: 11px; font-weight: 500; padding: 4px 10px; border-radius: 20px; height: fit-content; white-space: nowrap; }
+  .bok { background: var(--teal-light); color: #085041; }
+  .bwarn { background: #FAEEDA; color: #633806; }
+  .bgap { background: var(--rust-light); color: #712B13; }
+  .next-act { margin-top: 4px; padding: 18px 20px; border-left: 3px solid var(--rust); background: var(--cream); font-size: 14px; color: var(--ink-soft); line-height: 1.7; }
+  .v1 .next-act { border-left-color: var(--teal); }
+  .v2 .next-act { border-left-color: var(--purple); }
+  .next-act strong { color: var(--ink); font-weight: 500; display: block; margin-bottom: 4px; }
+
+  .stages { background: var(--cream-dark); }
+  .stages-intro { max-width: 680px; margin-bottom: 80px; }
+  .srow { display: grid; grid-template-columns: 80px 1fr 1fr; border-top: 1px solid var(--sand); padding: 40px 0; align-items: start; transition: background .2s; }
+  .srow:last-child { border-bottom: 1px solid var(--sand); }
+  .srow:hover { background: rgba(245,240,232,0.6); margin: 0 -48px; padding: 40px 48px; }
+  .snum { font-family: var(--font-display); font-size: 13px; color: var(--sand); padding-top: 6px; }
+  .stag { font-size: 10px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: var(--rust); margin-bottom: 10px; }
+  .sname { font-family: var(--font-display); font-size: 28px; font-weight: 300; line-height: 1.2; letter-spacing: -0.02em; margin-bottom: 12px; }
+  .squote { font-family: var(--font-display); font-style: italic; font-size: 15px; color: var(--rust); }
+  .sconst { font-size: 14px; font-weight: 300; color: var(--ink-soft); line-height: 1.7; margin-bottom: 16px; padding-top: 6px; }
+  .sconst strong { font-weight: 500; color: var(--ink); }
+  .sgrad { font-size: 13px; color: var(--rust); }
+  .sgrad::before { content: '→ '; font-family: var(--font-display); }
+
+  .transform { background: var(--ink); }
+  .transform .section-label { color: var(--rust-mid); }
+  .transform .section-label::before { background: var(--rust-mid); }
+  .transform .section-title { color: var(--cream); }
+  .tgrid { display: grid; grid-template-columns: 1fr 40px 1fr; align-items: center; margin-top: 64px; }
+  .tlabel { font-size: 11px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 28px; }
+  .bcol .tlabel { color: rgba(245,240,232,0.35); }
+  .acol .tlabel { color: var(--rust-mid); }
+  .titem { padding: 18px 0; border-bottom: 1px solid rgba(255,255,255,0.07); font-size: 16px; font-weight: 300; line-height: 1.5; }
+  .bcol .titem { color: rgba(245,240,232,0.4); }
+  .acol .titem { color: var(--cream); font-weight: 400; }
+  .titem:last-child { border-bottom: none; }
+  .tdiv { display: flex; flex-direction: column; align-items: center; color: var(--rust-mid); font-family: var(--font-display); font-size: 18px; }
+  .tdiv::before, .tdiv::after { content: ''; display: block; width: 1px; height: 60px; background: rgba(255,255,255,0.1); margin: 12px 0; }
+
+  .cta-mid { background: var(--rust); padding: 100px 48px; text-align: center; }
+  .cta-mid-title { font-family: var(--font-display); font-size: clamp(36px,5vw,60px); font-weight: 300; color: var(--white); line-height: 1.1; letter-spacing: -0.03em; margin: 0 auto 20px; max-width: 640px; }
+  .cta-mid-title em { font-style: italic; }
+  .cta-mid-sub { font-size: 17px; font-weight: 300; color: rgba(253,252,250,0.7); margin: 0 auto 44px; max-width: 460px; line-height: 1.7; }
+  .btn-white { background: var(--white); color: var(--rust); padding: 16px 40px; border-radius: 2px; font-size: 14px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; text-decoration: none; display: inline-block; transition: all .2s; }
+  .btn-white:hover { transform: translateY(-2px); }
+  .cta-note { margin-top: 20px; font-size: 13px; color: rgba(253,252,250,0.45); font-family: var(--font-display); font-style: italic; }
+
+  .form-section { background: var(--white); display: grid; grid-template-columns: 1fr 1fr; gap: 100px; align-items: center; }
+  .form-box { background: var(--cream); padding: 48px; }
+  .form-box h3 { font-family: var(--font-display); font-size: 26px; font-weight: 300; margin-bottom: 8px; letter-spacing: -0.02em; }
+  .form-box > p { font-size: 14px; font-weight: 300; color: var(--ink-soft); margin-bottom: 32px; line-height: 1.6; }
+  .fg { margin-bottom: 16px; }
+  .fg label { display: block; font-size: 11px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-soft); margin-bottom: 8px; }
+  .fg input, .fg select { width: 100%; padding: 14px 16px; background: var(--white); border: 1px solid var(--sand); border-radius: 2px; font-size: 15px; font-family: var(--font-body); font-weight: 300; color: var(--ink); outline: none; transition: border-color .2s; appearance: none; }
+  .fg input:focus, .fg select:focus { border-color: var(--rust); }
+  .fsub { width: 100%; background: var(--rust); color: var(--white); padding: 16px; border: none; border-radius: 2px; font-size: 13px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; margin-top: 8px; transition: background .2s; }
+  .fsub:hover { background: #A03508; }
+  .fdisclaim { font-size: 12px; color: var(--sand); margin-top: 12px; text-align: center; line-height: 1.5; }
+
+  footer { background: var(--ink); padding: 48px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
+  .flogo { font-family: var(--font-display); font-size: 16px; font-weight: 700; color: var(--cream); }
+  .flogo span { color: var(--rust-mid); }
+  .fcopy { font-size: 13px; font-weight: 300; color: rgba(245,240,232,0.3); }
+
+  .fade-in { opacity: 0; transform: translateY(24px); transition: opacity 0.7s ease, transform 0.7s ease; }
+  .fade-in.visible { opacity: 1; transform: translateY(0); }
+
+  @media (max-width: 900px) {
+    nav { padding: 16px 24px; }
+    section { padding: 72px 24px; }
+    .hero { padding: 120px 24px 72px; }
+    .pains-grid { grid-template-columns: 1fr; }
+    .srow { grid-template-columns: 1fr; gap: 12px; }
+    .snum { display: none; }
+    .tgrid { grid-template-columns: 1fr; gap: 32px; }
+    .tdiv { display: none; }
+    .form-section { grid-template-columns: 1fr; gap: 48px; }
+    footer { padding: 32px 24px; }
+    .lrow { grid-template-columns: 28px 1fr auto; gap: 10px; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">The Tune-Up<span> Program</span></div>
+  <a href="#contacto" class="nav-cta">Quiero saber más</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-eyebrow">Para dueños de talleres independientes · España y Latinoamérica</div>
+  <h1 class="hero-headline fade-in">
+    Parece que lo tienes<br>controlado.<br>Pero no <em>controlas nada.</em>
+  </h1>
+  <p class="hero-sub fade-in">Tienes faena, tienes equipo, llevas años en esto. Pero a fin de mes algo no cuadra. La agenda se descontrola, la gente lleva su ritmo, y tú estás siempre apagando fuegos. Si esto sigue así, acabas agotado. Y eso tiene solución.</p>
+  <div class="hero-actions fade-in">
+    <a href="#diagnostico" class="btn-primary">Descubre en qué punto estás</a>
+    <a href="#contacto" class="btn-ghost">Hablar con nosotros →</a>
+  </div>
+  <p class="hero-note">Para dueños de talleres que saben de mecánica — y quieren aprender a gestionar un negocio.</p>
+</section>
+
+<!-- PAINS -->
+<section class="pains">
+  <div class="pains-intro">
+    <div class="section-label">Los tres dolores que no se dicen en voz alta</div>
+    <h2 class="section-title">Tienes faena.<br>Pero no sale<br>el <em>dinero.</em><br>¿Por qué?</h2>
+    <p class="section-body">Parece que lo tienes controlado. Tienes agenda, tienes equipo, llevas años en el sector. Pero algo falla. Y el problema casi nunca está donde crees. Reconoce en cuál de estas trampas estás tú.</p>
+  </div>
+  <div class="pains-grid">
+    <div class="pain-card fade-in">
+      <div class="pain-number">01</div>
+      <h3 class="pain-title">Creas sistemas que nadie sigue</h3>
+      <p class="pain-desc">Has intentado poner orden. Cambios de software, nuevos procesos, reuniones. Pero al cabo de dos semanas todo vuelve a lo de antes. Y cuando llega una avería complicada — de esas que no tienen solución fácil — encima tienes que gestionar al cliente sin saber qué decirle. Sin sistema, todo depende de improvisar.</p>
+      <p class="pain-quote">"Tienes mucha faena, y de golpe te das cuenta que no controlas nada. Tienes faena, pero no sale el dinero."</p>
+    </div>
+    <div class="pain-card fade-in">
+      <div class="pain-number">02</div>
+      <h3 class="pain-title">No controlas los procesos ni al equipo</h3>
+      <p class="pain-desc">Creas procesos, los explicas, los escribes. Y a la semana siguiente nadie los sigue. Se pierde tiempo, los trabajos se retrasan, y tú estás siempre apagando fuegos. Y debajo de todo eso, un miedo que no se dice en voz alta: que un mecánico clave se vaya y no encuentres sustituto.</p>
+      <p class="pain-quote">"No tengo control de los procesos ni de los empleados."</p>
+    </div>
+    <div class="pain-card fade-in">
+      <div class="pain-number">03</div>
+      <h3 class="pain-title">Acabas agotado y piensas en tirar la toalla</h3>
+      <p class="pain-desc">No es solo el trabajo — es la presión constante. La gente que lleva su ritmo, la agenda que no se cumple, los clientes que aprietan, los trabajadores que no rinden como quieres. Llegas a casa sin energía. Y en algún momento te preguntas si merece la pena seguir.</p>
+      <p class="pain-quote">"Lo que me preocupa es acabar agotado y tener que traspasarlo."</p>
+    </div>
+  </div>
+</section>
+
+<!-- DIAGNÓSTICO -->
+<section class="diagnosis" id="diagnostico">
+  <div class="diagnosis-intro">
+    <div class="section-label">The Tune-Up Program · Diagnóstico de madurez</div>
+    <h2 class="section-title">Tres cosas que todo taller<br>necesita resolver.<br>¿En cuál <em>estás tú?</em></h2>
+    <p class="section-body">Todo taller tiene los mismos tres problemas — pero en distintos niveles. Uno puede tener Instagram y ni abrir los comentarios. Otro tiene clientes contentos que no vuelven porque nadie les hace seguimiento. Selecciona cada vértice y encuentra exactamente dónde estás tú ahora mismo.</p>
+  </div>
+
+  <div class="diag-tabs">
+    <button class="diag-tab a0" onclick="showV(0)">① Captar — ¿te encuentran?</button>
+    <button class="diag-tab" onclick="showV(1)">② Impresionar — ¿perciben el valor?</button>
+    <button class="diag-tab" onclick="showV(2)">③ Fidelizar — ¿vuelven?</button>
+  </div>
+
+  <div class="vpanel v0 active" id="vp0">
+    <div class="vheader">
+      <p class="vh-tag">Vértice 1 · Captar</p>
+      <p class="vh-title">¿Los clientes te encuentran y te eligen?</p>
+      <p class="vh-sub">No basta con tener presencia. La pregunta es si esa presencia está trabajando para ti de forma activa.</p>
+    </div>
+    <div class="lrow" onclick="selL(0,0)">
+      <div class="lnum">0</div>
+      <div><p class="lname">Sin presencia</p><p class="ldesc">No tienes ficha de Google, ni redes, ni web. El 100% del trabajo llega por conocidos. Si paran ellos, paras tú.</p><div class="lpills"><span class="pill n">Sin Google Business</span><span class="pill n">Sin redes</span><span class="pill n">Sin web</span></div></div>
+      <span class="lbadge bgap">Punto de partida</span>
+    </div>
+    <div class="lrow sel" onclick="selL(0,1)">
+      <div class="lnum">1</div>
+      <div><p class="lname">Presencia básica sin sistema</p><p class="ldesc">Tienes ficha de Google y quizás Instagram, pero no los gestionas. Las reseñas llegan solas — pocas. No publicas con regularidad.</p><div class="lpills"><span class="pill y">Google Business</span><span class="pill y">Instagram</span><span class="pill n">Sin sistema de reseñas</span><span class="pill n">Sin publicación regular</span></div></div>
+      <span class="lbadge bwarn">Aquí está la mayoría</span>
+    </div>
+    <div class="lrow" onclick="selL(0,2)">
+      <div class="lnum">2</div>
+      <div><p class="lname">Presencia activa</p><p class="ldesc">Publicas con regularidad, pides reseñas de forma sistemática y tienes más de 20 valoraciones positivas. El boca a boca está amplificado online.</p><div class="lpills"><span class="pill y">+20 reseñas Google</span><span class="pill y">Contenido regular</span><span class="pill y">Sistema de reseñas</span><span class="pill n">Sin ads pagados</span></div></div>
+      <span class="lbadge bwarn">Objetivo corto plazo</span>
+    </div>
+    <div class="lrow" onclick="selL(0,3)">
+      <div class="lnum">3</div>
+      <div><p class="lname">Captación predecible</p><p class="ldesc">Tienes campañas activas, sabes cuánto cuesta conseguir un cliente y el flujo de nuevos contactos es constante y medible mes a mes.</p><div class="lpills"><span class="pill y">Google Ads activo</span><span class="pill y">Meta Ads activo</span><span class="pill y">Coste por lead medido</span><span class="pill y">Flujo constante</span></div></div>
+      <span class="lbadge bok">Nivel avanzado</span>
+    </div>
+    <div class="next-act"><strong>Si estás en el nivel 1, esto es lo siguiente:</strong>Instala un proceso simple para pedir reseñas a cada cliente al entregar el coche — un mensaje de WhatsApp con el enlace directo. Con 5 reseñas nuevas al mes, en 6 meses tienes +30 valoraciones y tu visibilidad local se multiplica sin gastar un euro.</div>
+  </div>
+
+  <div class="vpanel v1" id="vp1">
+    <div class="vheader">
+      <p class="vh-tag">Vértice 2 · Impresionar</p>
+      <p class="vh-title">¿El cliente percibe el valor que das?</p>
+      <p class="vh-sub">Que entre es solo el primer paso. Lo que vive dentro del taller decide si vuelve, si paga más y si te recomienda.</p>
+    </div>
+    <div class="lrow" onclick="selL(1,0)">
+      <div class="lnum">0</div>
+      <div><p class="lname">Sin procesos ni imagen</p><p class="ldesc">Cada trabajo se hace diferente según quién lo coge. El taller está desordenado. El cliente no sabe qué esperar ni cuándo tendrá su coche.</p><div class="lpills"><span class="pill n">Sin orden de trabajo</span><span class="pill n">Sin comunicación proactiva</span><span class="pill n">Sin imagen cuidada</span></div></div>
+      <span class="lbadge bgap">Punto de partida</span>
+    </div>
+    <div class="lrow sel" onclick="selL(1,1)">
+      <div class="lnum">1</div>
+      <div><p class="lname">Proceso básico pero inconsistente</p><p class="ldesc">Hay cierto orden cuando tú estás. Cuando no estás, la calidad varía. El cliente recibe información si la pide, no de forma proactiva.</p><div class="lpills"><span class="pill y">Orden de trabajo manual</span><span class="pill n">Proceso no documentado</span><span class="pill n">Sin comunicación automática</span></div></div>
+      <span class="lbadge bwarn">Zona más común</span>
+    </div>
+    <div class="lrow" onclick="selL(1,2)">
+      <div class="lnum">2</div>
+      <div><p class="lname">Experiencia consistente</p><p class="ldesc">El proceso está documentado y cualquier mecánico puede seguirlo igual. El cliente recibe actualizaciones sin pedirlas. El taller transmite profesionalidad siempre.</p><div class="lpills"><span class="pill y">Proceso documentado</span><span class="pill y">Comunicación proactiva</span><span class="pill y">Taller ordenado siempre</span></div></div>
+      <span class="lbadge bwarn">Objetivo corto plazo</span>
+    </div>
+    <div class="lrow" onclick="selL(1,3)">
+      <div class="lnum">3</div>
+      <div><p class="lname">Experiencia diferencial</p><p class="ldesc">La experiencia es tan buena que genera reseñas espontáneas y referidos activos. El taller justifica precios más altos que la competencia.</p><div class="lpills"><span class="pill y">Reseñas espontáneas</span><span class="pill y">Referidos activos</span><span class="pill y">Precio premium justificado</span></div></div>
+      <span class="lbadge bok">Nivel avanzado</span>
+    </div>
+    <div class="next-act"><strong>Si estás en el nivel 1, esto es lo siguiente:</strong>Documenta en una hoja cómo recibes, trabajas y entregas cada coche — siempre igual. Añade un WhatsApp automático cuando el coche está listo. Dos cambios, impacto inmediato en lo que el cliente percibe de ti.</div>
+  </div>
+
+  <div class="vpanel v2" id="vp2">
+    <div class="vheader">
+      <p class="vh-tag">Vértice 3 · Fidelizar</p>
+      <p class="vh-title">¿Vuelven y te recomiendan?</p>
+      <p class="vh-sub">El cliente más barato de conseguir es el que ya tienes. ¿Lo estás activando o dejando que se olvide de ti?</p>
+    </div>
+    <div class="lrow" onclick="selL(2,0)">
+      <div class="lnum">0</div>
+      <div><p class="lname">Sin seguimiento</p><p class="ldesc">Cuando el coche sale no vuelves a saber nada del cliente. No hay base de datos ni contacto posterior. Vuelven si se acuerdan de ti.</p><div class="lpills"><span class="pill n">Sin base de datos</span><span class="pill n">Sin seguimiento</span><span class="pill n">Sin recordatorios</span></div></div>
+      <span class="lbadge bgap">Punto de partida</span>
+    </div>
+    <div class="lrow sel" onclick="selL(2,1)">
+      <div class="lnum">1</div>
+      <div><p class="lname">Base de datos sin explotar</p><p class="ldesc">Tienes los contactos guardados — en el móvil, en Excel, en el programa — pero no haces nada con ellos de forma sistemática.</p><div class="lpills"><span class="pill y">Contactos guardados</span><span class="pill n">Sin campañas de reactivación</span><span class="pill n">Sin recordatorios de revisión</span></div></div>
+      <span class="lbadge bwarn">La mayoría aquí</span>
+    </div>
+    <div class="lrow" onclick="selL(2,2)">
+      <div class="lnum">2</div>
+      <div><p class="lname">Seguimiento activo</p><p class="ldesc">Mandas recordatorios de revisión e ITV. Tienes un proceso post-entrega. Los clientes sienten que te acuerdas de ellos y eso genera lealtad real.</p><div class="lpills"><span class="pill y">Recordatorios ITV/revisión</span><span class="pill y">Follow-up post-entrega</span><span class="pill n">Sin programa de referidos</span></div></div>
+      <span class="lbadge bwarn">Objetivo corto plazo</span>
+    </div>
+    <div class="lrow" onclick="selL(2,3)">
+      <div class="lnum">3</div>
+      <div><p class="lname">Motor de referidos activo</p><p class="ldesc">Tienes un sistema que incentiva que tus clientes te traigan a otros. El crecimiento viene en parte de tu propia base. El coste de adquisición baja.</p><div class="lpills"><span class="pill y">Programa de referidos</span><span class="pill y">Campañas WhatsApp</span><span class="pill y">Valor de cliente medido</span></div></div>
+      <span class="lbadge bok">Nivel avanzado</span>
+    </div>
+    <div class="next-act"><strong>Si estás en el nivel 1, esto es lo siguiente:</strong>Manda hoy un mensaje a los clientes que no han vuelto en más de 6 meses: "Hola [nombre], hace tiempo que no sabemos nada de ti. ¿Cómo está el coche?" Sencillo, personal, sin vender nada. Una hora de trabajo, clientes reactivados.</div>
+  </div>
+</section>
+
+<!-- STAGES -->
+<section class="stages" id="stages">
+  <div class="stages-intro">
+    <div class="section-label">¿En qué etapa está tu taller?</div>
+    <h2 class="section-title">¿En qué punto<br>está tu <em>taller?</em></h2>
+    <p class="section-body">Da igual los años que lleves. Lo que determina en qué punto estás es si tienes sistema o no. Encuentra tu etapa — y sabrás exactamente qué es lo primero que necesitas cambiar.</p>
+  </div>
+  <div>
+    <div class="srow fade-in">
+      <div class="snum">01</div>
+      <div><div class="stag">Etapa 1</div><div class="sname">Tienes agenda<br>pero no la controlas</div><div class="squote">"Unas semanas a tope, otras mirando el techo."</div></div>
+      <div><p class="sconst"><strong>Lo que sientes:</strong> Hay trabajo, pero no consigues agendarlo bien. Tienes lista de espera pero el tiempo se escapa. Los lunes empiezan caóticos y cada semana es improvisar hasta que coges el ritmo.</p><p class="sgrad">Para avanzar: instalar un sistema de agenda y control de tiempos que funcione sin depender de ti.</p></div>
+    </div>
+    <div class="srow fade-in">
+      <div class="snum">02</div>
+      <div><div class="stag">Etapa 2</div><div class="sname">Tienes ayuda<br>pero todo pasa por ti</div><div class="squote">"Caótico. Parece que lo tienes controlado pero la gente lleva su ritmo."</div></div>
+      <div><p class="sconst"><strong>Lo que sientes:</strong> Tienes equipo pero la comunicación falla. Creas procesos que no se siguen. Se pierde tiempo en cosas que deberían estar resueltas. Y encima te preocupa que los mecánicos se vayan.</p><p class="sgrad">Para avanzar: instalar un sistema de comunicación y procesos que el equipo realmente use.</p></div>
+    </div>
+    <div class="srow fade-in">
+      <div class="snum">03</div>
+      <div><div class="stag">Etapa 3</div><div class="sname">Tienes equipo<br>pero sin control real</div><div class="squote">"Quiero coger los trabajos más rentables. Pero no sé cuáles son."</div></div>
+      <div><p class="sconst"><strong>Lo que sientes:</strong> El taller funciona, pero no tienes claridad sobre qué trabajos merecen la pena. Aceptas de todo porque no tienes criterio para filtrar. Quieres coger los trabajos rentables y fáciles — pero no sabes cuáles son.</p><p class="sgrad">Para avanzar: medir rentabilidad por tipo de trabajo y empezar a elegir con criterio.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- TRANSFORMACIÓN -->
+<section class="transform">
+  <div class="section-label">La transformación</div>
+  <h2 class="section-title">Dejas de culpar<br>a los impuestos.<br>Empiezas a <em>controlar.</em></h2>
+  <div class="tgrid">
+    <div class="bcol">
+      <div class="tlabel">Sin sistema</div>
+      <div class="titem">Los procesos se crean pero nadie los sigue</div>
+      <div class="titem">Coches retrasados, clientes sin respuesta</div>
+      <div class="titem">El equipo funciona solo si estás tú encima</div>
+      <div class="titem">Miedo constante a que un mecánico se vaya</div>
+      <div class="titem">Taller que factura pero no da paz mental</div>
+    </div>
+    <div class="tdiv">→</div>
+    <div class="acol">
+      <div class="tlabel">Con sistema</div>
+      <div class="titem">Los procesos se siguen sin que estés encima</div>
+      <div class="titem">Trabajo organizado, plazos que se cumplen</div>
+      <div class="titem">El equipo sabe qué hacer y cómo comunicarlo</div>
+      <div class="titem">Clientes que vuelven y te recomiendan</div>
+      <div class="titem">Control real — del negocio y de tu tiempo</div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA MID -->
+<section class="cta-mid">
+  <h2 class="cta-mid-title">El problema no es<br>el trabajo.<br>Es la <em>forma</em><br>de trabajar.</h2>
+  <p class="cta-mid-sub">Formación, acompañamiento personalizado y herramientas listas para usar desde el primer día. Dueños de taller que lo han hecho lo llaman la mejor inversión que han hecho en su negocio.</p>
+  <a href="#contacto" class="btn-white">Quiero que me expliquen cómo</a>
+  <p class="cta-note">The Tune-Up Program · 20 minutos por teléfono · Sin compromiso</p>
+</section>
+
+<!-- FORM -->
+<section class="form-section" id="contacto">
+  <div>
+    <div class="section-label">Reserva tu llamada</div>
+    <h2 class="section-title">Antes de que<br>el taller<br>te <em>agote.</em></h2>
+    <p class="section-body">En 20 minutos vemos exactamente en qué punto está tu taller y qué es lo primero que cambiaría. Sin rodeos. Si el programa tiene sentido para ti, seguimos. Si no, te quedas con la claridad igualmente — y eso ya vale.</p>
+  </div>
+  <div class="form-box">
+    <h3>Reserva tu llamada con The Tune-Up Program</h3>
+    <p>En 20 minutos vemos en qué punto está tu taller y si el programa tiene sentido para ti. Sin compromiso.</p>
+    <form onsubmit="handleSubmit(event)">
+      <div class="fg"><label>Tu nombre</label><input type="text" placeholder="Pedro García" required></div>
+      <div class="fg"><label>WhatsApp o teléfono</label><input type="tel" placeholder="+34 600 000 000" required></div>
+      <div class="fg"><label>¿Cuántos mecánicos tenéis?</label>
+        <select required><option value="">Selecciona...</option><option>Solo yo (autónomo)</option><option>2–4 mecánicos</option><option>5–10 mecánicos</option><option>Más de 10 mecánicos</option></select>
+      </div>
+      <div class="fg"><label>¿Cuál es tu situación ahora mismo?</label>
+        <select required><option value="">Selecciona...</option><option>Trabajo entra irregular, sin sistema</option><option>Tengo equipo pero todo pasa por mí</option><option>Facturamos bien pero no queda dinero</option><option>Acabo de abrir y quiero empezar bien</option><option>Llevo años y quiero dar un salto de nivel</option></select>
+      </div>
+      <button type="submit" class="fsub">Reservar mi llamada gratuita</button>
+      <p class="fdisclaim">Sin spam. Sin compromisos. Te llamo yo, cuando te venga bien.</p>
+    </form>
+  </div>
+</section>
+
+<footer>
+  <div class="flogo">The Tune-Up<span> Program</span></div>
+  <div class="fcopy">© 2026 · España y Latinoamérica</div>
+</footer>
+
+<script>
+  const obs = new IntersectionObserver((entries) => {
+    entries.forEach((e,i) => { if(e.isIntersecting){ setTimeout(()=>e.target.classList.add('visible'),i*80); obs.unobserve(e.target); } });
+  }, {threshold:0.1});
+  document.querySelectorAll('.fade-in').forEach(el=>obs.observe(el));
+
+  const dtabs = document.querySelectorAll('.diag-tab');
+  function showV(i) {
+    dtabs.forEach((t,j) => { t.className = 'diag-tab' + (j===i ? ' a'+j : ''); });
+    document.querySelectorAll('.vpanel').forEach((p,j) => p.classList.toggle('active', j===i));
+  }
+  function selL(v, l) {
+    document.getElementById('vp'+v).querySelectorAll('.lrow').forEach((r,j) => r.classList.toggle('sel', j===l));
+  }
+  function handleSubmit(e) {
+    e.preventDefault();
+    const btn = e.target.querySelector('.fsub');
+    btn.textContent = '✓ Recibido — te contactamos pronto';
+    btn.style.background = '#0F6E56';
+    btn.disabled = true;
+  }
+</script>
+</body>
+</html>
