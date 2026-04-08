@@ -420,15 +420,16 @@ function closeEditar() { document.getElementById('modalEditar').classList.remove
 
 async function guardarEdicion() {
   const id = document.getElementById('editId').value;
-  const updates = {
-    nombre: document.getElementById('editNombre').value.trim(),
-    nombre_taller: document.getElementById('editTaller').value.trim(),
-    etapa: parseInt(document.getElementById('editEtapa').value),
-    modulo_activo: parseInt(document.getElementById('editModulo').value),
-    proxima_llamada: document.getElementById('editLlamada').value || null,
-    acceso: document.getElementById('editAcceso').value
-  };
-  await sb.from('profiles').update(updates).eq('id', id);
+  const { error } = await sb.rpc('update_client_profile', {
+    client_id: id,
+    p_nombre: document.getElementById('editNombre').value.trim(),
+    p_nombre_taller: document.getElementById('editTaller').value.trim(),
+    p_etapa: parseInt(document.getElementById('editEtapa').value),
+    p_modulo_activo: parseInt(document.getElementById('editModulo').value),
+    p_proxima_llamada: document.getElementById('editLlamada').value || null,
+    p_acceso: document.getElementById('editAcceso').value
+  });
+  if (error) { alert('Error al guardar: ' + error.message); return; }
   closeEditar();
   await loadClientes();
 }
