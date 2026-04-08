@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — The Tune-Up Program</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,400;0,700;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --cream: #F5F0E8; --cream-dark: #EDE7D9; --ink: #1A1714; --ink-soft: #3D3830;
+    --rust: #C4440A; --rust-light: #F5E8E0; --sand: #D4C9B0; --white: #FDFCFA;
+    --teal: #1D9E75; --teal-light: #E1F5EE;
+    --font-display: 'Fraunces', Georgia, serif;
+    --font-body: 'DM Sans', sans-serif;
+  }
+  body { background: var(--cream-dark); color: var(--ink); font-family: var(--font-body); min-height: 100vh; }
+
+  nav { background: var(--ink); padding: 0 40px; display: flex; justify-content: space-between; align-items: center; height: 64px; position: sticky; top: 0; z-index: 100; }
+  .nav-logo { font-family: var(--font-display); font-size: 17px; font-weight: 700; color: var(--cream); letter-spacing: -0.02em; }
+  .nav-logo span { color: var(--rust); }
+  .nav-badge { font-size: 10px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; background: var(--rust); color: var(--white); padding: 3px 8px; border-radius: 2px; margin-left: 10px; }
+  .nav-right { display: flex; align-items: center; gap: 16px; }
+  .btn-logout { font-size: 12px; color: rgba(245,240,232,0.5); background: none; border: 1px solid rgba(245,240,232,0.2); padding: 6px 14px; cursor: pointer; font-family: var(--font-body); border-radius: 2px; transition: all .2s; letter-spacing: 0.04em; text-transform: uppercase; }
+  .btn-logout:hover { border-color: var(--rust); color: var(--rust); }
+
+  .app { display: flex; min-height: calc(100vh - 64px); }
+  aside { width: 220px; background: var(--cream); border-right: 1px solid var(--sand); padding: 28px 0; flex-shrink: 0; }
+  main { flex: 1; padding: 40px; }
+
+  .sidebar-label { font-size: 10px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: var(--sand); margin-bottom: 8px; padding: 0 20px 0 28px; }
+  .sidebar-link { display: flex; align-items: center; gap: 10px; padding: 9px 20px 9px 28px; font-size: 14px; color: var(--ink-soft); cursor: pointer; transition: all .15s; background: none; border: none; width: 100%; font-family: var(--font-body); }
+  .sidebar-link:hover { background: var(--cream-dark); color: var(--ink); }
+  .sidebar-link.active { background: var(--rust-light); color: var(--rust); font-weight: 500; border-left: 3px solid var(--rust); padding-left: 25px; }
+  .sidebar-icon { font-size: 15px; width: 18px; text-align: center; }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  .page-eyebrow { font-size: 11px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: var(--rust); margin-bottom: 8px; }
+  .page-title { font-family: var(--font-display); font-size: 32px; font-weight: 300; letter-spacing: -0.02em; line-height: 1.1; margin-bottom: 32px; }
+  .page-title em { font-style: italic; color: var(--rust); }
+
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 32px; }
+  .card { background: var(--cream); border: 1px solid var(--sand); padding: 24px; border-radius: 2px; }
+  .card-label { font-size: 11px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-soft); margin-bottom: 8px; }
+  .card-value { font-family: var(--font-display); font-size: 40px; font-weight: 300; color: var(--ink); letter-spacing: -0.02em; }
+  .card-value.rust { color: var(--rust); }
+  .card-value.teal { color: var(--teal); }
+
+  .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+  .section-title { font-size: 14px; font-weight: 500; color: var(--ink); }
+  .btn-primary { background: var(--rust); color: var(--white); border: none; padding: 10px 20px; font-family: var(--font-body); font-size: 12px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer; border-radius: 2px; transition: background .2s; }
+  .btn-primary:hover { background: #A03508; }
+
+  .table-wrap { background: var(--cream); border: 1px solid var(--sand); border-radius: 2px; overflow: hidden; margin-bottom: 24px; }
+  table { width: 100%; border-collapse: collapse; }
+  th { font-size: 11px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-soft); padding: 12px 20px; text-align: left; background: var(--cream-dark); border-bottom: 1px solid var(--sand); }
+  td { padding: 14px 20px; font-size: 14px; border-bottom: 1px solid rgba(212,201,176,0.4); color: var(--ink-soft); vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--cream-dark); }
+
+  .modulo-pill { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 500; padding: 3px 10px; border-radius: 20px; background: var(--rust-light); color: var(--rust); }
+  .etapa-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
+  .etapa-1 { background: var(--rust); }
+  .etapa-2 { background: var(--teal); }
+
+  .btn-edit { font-size: 12px; color: var(--ink-soft); background: none; border: 1px solid var(--sand); padding: 4px 12px; cursor: pointer; font-family: var(--font-body); border-radius: 2px; transition: all .2s; }
+  .btn-edit:hover { border-color: var(--rust); color: var(--rust); }
+
+  /* MODAL */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(26,23,20,0.6); z-index: 200; align-items: center; justify-content: center; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: var(--cream); border-radius: 2px; padding: 36px; width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto; }
+  .modal-title { font-family: var(--font-display); font-size: 24px; font-weight: 300; margin-bottom: 8px; }
+  .modal-sub { font-size: 13px; color: var(--ink-soft); margin-bottom: 28px; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .form-group { margin-bottom: 16px; }
+  .form-group label { display: block; font-size: 11px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-soft); margin-bottom: 6px; }
+  .form-group input, .form-group select { width: 100%; padding: 10px 12px; background: var(--white); border: 1px solid var(--sand); font-family: var(--font-body); font-size: 14px; color: var(--ink); border-radius: 2px; outline: none; transition: border-color .2s; }
+  .form-group input:focus, .form-group select:focus { border-color: var(--rust); }
+  .form-divider { border: none; border-top: 1px solid var(--sand); margin: 20px 0; }
+  .modal-actions { display: flex; gap: 12px; justify-content: flex-end; margin-top: 8px; }
+  .btn-cancel { background: none; border: 1px solid var(--sand); padding: 10px 20px; font-family: var(--font-body); font-size: 13px; cursor: pointer; border-radius: 2px; color: var(--ink-soft); }
+  .btn-save { background: var(--rust); color: var(--white); border: none; padding: 10px 20px; font-family: var(--font-body); font-size: 13px; font-weight: 500; cursor: pointer; border-radius: 2px; }
+
+  .msg-modal { font-size: 13px; padding: 10px 14px; border-radius: 2px; margin-bottom: 16px; display: none; }
+  .msg-modal.error { background: #FEE8E0; color: #8B2500; display: block; }
+  .msg-modal.success { background: var(--teal-light); color: #0D5C3A; display: block; }
+
+  #loading { position: fixed; inset: 0; background: var(--cream); display: flex; align-items: center; justify-content: center; z-index: 300; }
+  .loading-text { font-family: var(--font-display); font-size: 20px; font-weight: 300; color: var(--ink-soft); font-style: italic; }
+  .empty { text-align: center; padding: 40px; color: var(--sand); font-size: 14px; }
+</style>
+</head>
+<body>
+
+<div id="loading"><p class="loading-text">Cargando panel de administración…</p></div>
+
+<nav>
+  <div>
+    <span class="nav-logo">Tune<span>-Up</span></span>
+    <span class="nav-badge">Admin</span>
+  </div>
+  <div class="nav-right">
+    <span style="font-size:13px; color:rgba(245,240,232,0.5);">Marc</span>
+    <button class="btn-logout" onclick="logout()">Salir</button>
+  </div>
+</nav>
+
+<div class="app">
+  <aside>
+    <div style="margin-bottom:24px;">
+      <div class="sidebar-label">Panel</div>
+      <button class="sidebar-link active" onclick="showPanel('clientes', this)">
+        <span class="sidebar-icon">◎</span> Clientes
+      </button>
+      <button class="sidebar-link" onclick="showPanel('nuevo', this)">
+        <span class="sidebar-icon">＋</span> Nuevo cliente
+      </button>
+    </div>
+  </aside>
+
+  <main>
+
+    <!-- PANEL: CLIENTES -->
+    <div class="panel active" id="panel-clientes">
+      <div class="page-eyebrow">Administración</div>
+      <h1 class="page-title">Todos los <em>clientes</em></h1>
+
+      <div class="cards" id="statsCards">
+        <div class="card">
+          <div class="card-label">Clientes activos</div>
+          <div class="card-value rust" id="cntActivos">—</div>
+        </div>
+        <div class="card">
+          <div class="card-label">En Etapa 1</div>
+          <div class="card-value" id="cntEtapa1">—</div>
+        </div>
+        <div class="card">
+          <div class="card-label">En Etapa 2</div>
+          <div class="card-value teal" id="cntEtapa2">—</div>
+        </div>
+        <div class="card">
+          <div class="card-label">Completados</div>
+          <div class="card-value" id="cntCompletados">—</div>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Taller</th>
+              <th>Propietario</th>
+              <th>Etapa</th>
+              <th>Módulo activo</th>
+              <th>Próxima llamada</th>
+              <th>Acceso</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="clientesBody">
+            <tr><td colspan="7"><div class="empty">Cargando clientes…</div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- PANEL: NUEVO CLIENTE -->
+    <div class="panel" id="panel-nuevo">
+      <div class="page-eyebrow">Nuevo cliente</div>
+      <h1 class="page-title">Invitar <em>taller</em></h1>
+
+      <div style="max-width:520px;">
+        <div class="msg-modal" id="msgNuevo"></div>
+
+        <div style="background:var(--cream);border:1px solid var(--sand);padding:32px;border-radius:2px;">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Nombre del propietario</label>
+              <input type="text" id="nNombre" placeholder="Juan García">
+            </div>
+            <div class="form-group">
+              <label>Nombre del taller</label>
+              <input type="text" id="nTaller" placeholder="Taller García">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Email</label>
+            <input type="email" id="nEmail" placeholder="juan@taller.com">
+          </div>
+          <div class="form-group">
+            <label>Contraseña temporal</label>
+            <input type="text" id="nPassword" placeholder="Mínimo 8 caracteres" value="">
+          </div>
+          <hr class="form-divider">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Etapa del programa</label>
+              <select id="nEtapa">
+                <option value="1">Etapa 1</option>
+                <option value="2">Etapa 2</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Módulo de inicio</label>
+              <select id="nModulo">
+                <option value="1">Módulo 1 — Orden y zonas</option>
+                <option value="2">Módulo 2 — Recepción activa</option>
+                <option value="3">Módulo 3 — Tiempos y rentabilidad</option>
+                <option value="4">Módulo 4 — Hábitos de equipo</option>
+                <option value="5">Módulo 5 — Postventa y reseñas</option>
+                <option value="6">Módulo 6 — Captación activa</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Fecha próxima llamada (opcional)</label>
+            <input type="date" id="nLlamada">
+          </div>
+          <button class="btn-primary" style="width:100%;padding:14px;" onclick="crearCliente()">Crear acceso y enviar invitación</button>
+        </div>
+
+        <p style="font-size:13px;color:var(--sand);margin-top:16px;line-height:1.6;">El cliente recibirá un email con sus credenciales de acceso. Podrá cambiar la contraseña desde su perfil.</p>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- MODAL EDITAR CLIENTE -->
+<div class="modal-overlay" id="modalEditar">
+  <div class="modal">
+    <h2 class="modal-title">Editar cliente</h2>
+    <p class="modal-sub" id="editSub">—</p>
+    <input type="hidden" id="editId">
+
+    <div class="form-row">
+      <div class="form-group">
+        <label>Nombre propietario</label>
+        <input type="text" id="editNombre">
+      </div>
+      <div class="form-group">
+        <label>Nombre del taller</label>
+        <input type="text" id="editTaller">
+      </div>
+    </div>
+    <hr class="form-divider">
+    <div class="form-row">
+      <div class="form-group">
+        <label>Etapa</label>
+        <select id="editEtapa">
+          <option value="1">Etapa 1</option>
+          <option value="2">Etapa 2</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Módulo activo</label>
+        <select id="editModulo">
+          <option value="1">1 — Orden y zonas</option>
+          <option value="2">2 — Recepción activa</option>
+          <option value="3">3 — Tiempos y rentabilidad</option>
+          <option value="4">4 — Hábitos de equipo</option>
+          <option value="5">5 — Postventa y reseñas</option>
+          <option value="6">6 — Captación activa</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Próxima llamada</label>
+      <input type="date" id="editLlamada">
+    </div>
+    <div class="form-group">
+      <label>Estado del acceso</label>
+      <select id="editAcceso">
+        <option value="activo">Activo</option>
+        <option value="pausado">Pausado</option>
+        <option value="completado">Completado</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeEditar()">Cancelar</button>
+      <button class="btn-save" onclick="guardarEdicion()">Guardar cambios</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://qvovlnxonotbxcsnyejs.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_A2DkeOYyRZwHw8hwUOZlMw_W2_XDClG';
+const { createClient } = supabase;
+const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+async function init() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) { window.location.href = '/login.html'; return; }
+
+  const { data: profile } = await sb.from('profiles').select('role').eq('id', session.user.id).single();
+  if (!profile || profile.role !== 'admin') { window.location.href = '/dashboard.html'; return; }
+
+  await loadClientes();
+  document.getElementById('loading').style.display = 'none';
+}
+
+async function loadClientes() {
+  const { data, error } = await sb.rpc('get_all_profiles');
+  const tbody = document.getElementById('clientesBody');
+
+  if (!data || data.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7"><div class="empty">Aún no hay clientes. Añade el primero.</div></td></tr>';
+    document.getElementById('cntActivos').textContent = 0;
+    document.getElementById('cntEtapa1').textContent = 0;
+    document.getElementById('cntEtapa2').textContent = 0;
+    document.getElementById('cntCompletados').textContent = 0;
+    return;
+  }
+
+  let activos = 0, e1 = 0, e2 = 0, completados = 0;
+  tbody.innerHTML = data.map(c => {
+    if (c.acceso === 'activo') activos++;
+    if (c.etapa == 1) e1++;
+    if (c.etapa == 2) e2++;
+    if (c.acceso === 'completado') completados++;
+
+    const llamada = c.proxima_llamada ? new Date(c.proxima_llamada).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' }) : '—';
+    const accesoColor = { activo: 'color:var(--teal)', pausado: 'color:var(--sand)', completado: 'color:var(--ink-soft)' };
+    return `<tr>
+      <td><strong>${c.nombre_taller || '—'}</strong></td>
+      <td>${c.nombre || '—'}</td>
+      <td><span class="etapa-dot etapa-${c.etapa || 1}"></span>Etapa ${c.etapa || 1}</td>
+      <td><span class="modulo-pill">Módulo ${c.modulo_activo || 1}</span></td>
+      <td>${llamada}</td>
+      <td style="${accesoColor[c.acceso] || ''}">${c.acceso || 'activo'}</td>
+      <td><button class="btn-edit" onclick='openEditar(${JSON.stringify(c)})'>Editar</button></td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('cntActivos').textContent = activos;
+  document.getElementById('cntEtapa1').textContent = e1;
+  document.getElementById('cntEtapa2').textContent = e2;
+  document.getElementById('cntCompletados').textContent = completados;
+}
+
+function showPanel(id, btn) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
+  document.getElementById('panel-' + id).classList.add('active');
+  btn.classList.add('active');
+}
+
+async function crearCliente() {
+  const nombre = document.getElementById('nNombre').value.trim();
+  const taller = document.getElementById('nTaller').value.trim();
+  const email = document.getElementById('nEmail').value.trim();
+  const password = document.getElementById('nPassword').value.trim();
+  const etapa = document.getElementById('nEtapa').value;
+  const modulo = document.getElementById('nModulo').value;
+  const llamada = document.getElementById('nLlamada').value;
+  const msg = document.getElementById('msgNuevo');
+
+  msg.className = 'msg-modal';
+  if (!nombre || !email || !password) { msg.className = 'msg-modal error'; msg.textContent = 'Nombre, email y contraseña son obligatorios.'; return; }
+  if (password.length < 8) { msg.className = 'msg-modal error'; msg.textContent = 'La contraseña debe tener al menos 8 caracteres.'; return; }
+
+  // Guardar sesión actual de Marc
+  const { data: { session: adminSession } } = await sb.auth.getSession();
+
+  // Crear usuario cliente con signUp
+  const { data: signUpData, error: signUpError } = await sb.auth.signUp({ email, password });
+  if (signUpError) { msg.className = 'msg-modal error'; msg.textContent = 'Error: ' + signUpError.message; return; }
+
+  const userId = signUpData.user?.id;
+  if (!userId) { msg.className = 'msg-modal error'; msg.textContent = 'No se pudo crear el usuario.'; return; }
+
+  // Crear perfil
+  const { error: profileError } = await sb.from('profiles').insert({
+    id: userId,
+    nombre,
+    nombre_taller: taller,
+    email,
+    etapa: parseInt(etapa),
+    modulo_activo: parseInt(modulo),
+    proxima_llamada: llamada || null,
+    acceso: 'activo',
+    role: 'client'
+  });
+
+  if (profileError) { msg.className = 'msg-modal error'; msg.textContent = 'Error en perfil: ' + profileError.message; return; }
+
+  // Restaurar sesión de Marc
+  await sb.auth.setSession(adminSession);
+
+  msg.className = 'msg-modal success';
+  msg.textContent = `✓ Acceso creado para ${nombre} (${taller}). Credenciales: ${email} / ${password}`;
+
+  // Limpiar form
+  ['nNombre','nTaller','nEmail','nPassword','nLlamada'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('nEtapa').value = '1';
+  document.getElementById('nModulo').value = '1';
+
+  await loadClientes();
+}
+
+function openEditar(c) {
+  document.getElementById('editId').value = c.id;
+  document.getElementById('editSub').textContent = (c.nombre_taller || '—') + ' · ' + (c.nombre || '—');
+  document.getElementById('editNombre').value = c.nombre || '';
+  document.getElementById('editTaller').value = c.nombre_taller || '';
+  document.getElementById('editEtapa').value = c.etapa || 1;
+  document.getElementById('editModulo').value = c.modulo_activo || 1;
+  document.getElementById('editLlamada').value = c.proxima_llamada ? c.proxima_llamada.split('T')[0] : '';
+  document.getElementById('editAcceso').value = c.acceso || 'activo';
+  document.getElementById('modalEditar').classList.add('open');
+}
+
+function closeEditar() { document.getElementById('modalEditar').classList.remove('open'); }
+
+async function guardarEdicion() {
+  const id = document.getElementById('editId').value;
+  const updates = {
+    nombre: document.getElementById('editNombre').value.trim(),
+    nombre_taller: document.getElementById('editTaller').value.trim(),
+    etapa: parseInt(document.getElementById('editEtapa').value),
+    modulo_activo: parseInt(document.getElementById('editModulo').value),
+    proxima_llamada: document.getElementById('editLlamada').value || null,
+    acceso: document.getElementById('editAcceso').value
+  };
+  await sb.from('profiles').update(updates).eq('id', id);
+  closeEditar();
+  await loadClientes();
+}
+
+async function logout() {
+  await sb.auth.signOut();
+  window.location.href = '/login.html';
+}
+
+init();
+</script>
+</body>
+</html>
