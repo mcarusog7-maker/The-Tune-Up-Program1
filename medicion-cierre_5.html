@@ -1,0 +1,1256 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Medición de Cierre — The Tune-Up Program</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,400;0,700;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --cream: #F5F0E8; --cream-dark: #EDE7D9; --ink: #1A1714; --ink-soft: #3D3830;
+  --rust: #C4440A; --rust-light: #F5E8E0; --rust-mid: #E8805A;
+  --sand: #D4C9B0; --white: #FDFCFA;
+  --green: #1D6B45; --green-light: #E8F5EE;
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-body: 'DM Sans', sans-serif;
+}
+html { scroll-behavior: smooth; }
+body { background: var(--cream); color: var(--ink); font-family: var(--font-body); font-size: 16px; line-height: 1.6; overflow-x: hidden; }
+
+nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; padding: 20px 48px; display: flex; justify-content: space-between; align-items: center; background: rgba(245,240,232,0.93); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(212,201,176,0.4); }
+.nav-logo { font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--ink); }
+.nav-logo span { color: var(--rust); }
+.nav-tag { font-size: 13px; font-weight: 300; color: var(--ink-soft); font-style: italic; font-family: var(--font-display); }
+
+.progress-wrap { position: fixed; top: 0; left: 0; right: 0; height: 2px; z-index: 200; }
+.progress-bar { height: 2px; background: var(--green); transition: width 0.4s ease; width: 0%; }
+
+.hero { min-height: 50vh; padding: 140px 48px 72px; position: relative; overflow: hidden; }
+.hero::before { content: ''; position: absolute; top: -80px; right: -200px; width: 600px; height: 600px; background: radial-gradient(circle, rgba(29,107,69,0.05) 0%, transparent 70%); pointer-events: none; }
+.hero-eyebrow { font-size: 12px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: var(--green); margin-bottom: 28px; display: flex; align-items: center; gap: 12px; }
+.hero-eyebrow::before { content: ''; display: block; width: 32px; height: 1px; background: var(--green); }
+.hero-headline { font-family: var(--font-display); font-size: clamp(36px, 5vw, 62px); font-weight: 300; line-height: 1.05; letter-spacing: -0.03em; max-width: 700px; margin-bottom: 24px; }
+.hero-headline em { font-style: italic; color: var(--rust); }
+.hero-sub { font-size: 16px; font-weight: 300; color: var(--ink-soft); max-width: 520px; line-height: 1.75; }
+
+.form-wrap { padding: 0 48px 100px; max-width: 820px; }
+
+.block { margin-bottom: 64px; }
+.block-header { display: flex; align-items: center; gap: 14px; margin-bottom: 32px; padding-bottom: 18px; border-bottom: 1px solid var(--sand); }
+.block-num { font-family: var(--font-display); font-size: 13px; font-weight: 300; font-style: italic; color: var(--sand); }
+.block-title { font-family: var(--font-display); font-size: 20px; font-weight: 400; color: var(--ink); letter-spacing: -0.01em; }
+.block-sub { font-size: 13px; color: var(--ink-soft); font-weight: 300; margin-top: 2px; }
+
+.question { margin-bottom: 28px; }
+.question > label, .q-label { display: block; font-size: 15px; font-weight: 400; color: var(--ink); margin-bottom: 12px; line-height: 1.5; }
+.q-num { font-size: 13px; font-weight: 300; color: var(--sand); margin-right: 6px; font-family: var(--font-display); font-style: italic; }
+
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field label { font-size: 13px; font-weight: 400; color: var(--ink-soft); letter-spacing: 0.02em; }
+.field input, .field select {
+  background: var(--white); border: 1.5px solid var(--sand); border-radius: 2px;
+  padding: 12px 16px; font-family: var(--font-body); font-size: 15px; color: var(--ink);
+  transition: border-color 0.15s; outline: none;
+}
+.field input:focus, .field select:focus { border-color: var(--green); }
+
+.options-radio { display: flex; flex-direction: column; gap: 8px; }
+.opt { display: flex; align-items: center; gap: 14px; padding: 14px 18px; background: var(--white); border: 1.5px solid var(--sand); border-radius: 2px; cursor: pointer; transition: all 0.15s; }
+.opt:hover { background: var(--cream-dark); }
+.opt.selected { border-color: var(--green); background: var(--white); }
+.opt input { display: none; }
+.opt-dot { width: 16px; height: 16px; border: 1.5px solid var(--sand); border-radius: 50%; flex-shrink: 0; position: relative; transition: all 0.15s; }
+.opt.selected .opt-dot { border-color: var(--green); background: var(--green); }
+.opt-dot::after { content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); width: 5px; height: 5px; border-radius: 50%; background: var(--white); opacity: 0; }
+.opt.selected .opt-dot::after { opacity: 1; }
+.opt-text { font-size: 14px; color: var(--ink-soft); font-weight: 300; line-height: 1.4; }
+.opt.selected .opt-text { color: var(--ink); font-weight: 400; }
+
+.scale-anchors { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+.anchor-btn { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 14px 8px 12px; background: var(--white); border: 1.5px solid var(--sand); border-radius: 2px; cursor: pointer; transition: all 0.15s; text-align: center; }
+.anchor-btn:hover { background: var(--cream-dark); }
+.anchor-btn.selected { border-color: var(--green); background: var(--green-light); }
+.anchor-num { font-family: var(--font-display); font-size: 24px; font-weight: 300; color: var(--sand); transition: color 0.15s; }
+.anchor-btn.selected .anchor-num { color: var(--green); }
+.anchor-word { font-size: 11px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; color: var(--sand); transition: color 0.15s; }
+.anchor-btn.selected .anchor-word { color: var(--green); }
+
+.explain-area { margin-top: 12px; }
+.explain-area label { font-size: 12px; font-weight: 300; color: var(--ink-soft); font-style: italic; display: block; margin-bottom: 6px; }
+.explain-area textarea { width: 100%; background: var(--white); border: 1.5px solid var(--sand); border-radius: 2px; padding: 12px 16px; font-family: var(--font-body); font-size: 14px; color: var(--ink); resize: vertical; min-height: 72px; outline: none; transition: border-color 0.15s; line-height: 1.6; }
+.explain-area textarea:focus { border-color: var(--green); }
+
+/* Comparativa antes/después */
+.compare-block { background: var(--ink); border-radius: 2px; padding: 40px; margin-bottom: 64px; }
+.compare-block .block-header { border-bottom-color: rgba(212,201,176,0.2); }
+.compare-block .block-num { color: rgba(212,201,176,0.4); }
+.compare-block .block-title { color: var(--white); }
+.compare-block .block-sub { color: rgba(212,201,176,0.6); }
+.compare-block .q-label { color: rgba(253,252,250,0.9); }
+.compare-block .anchor-btn { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.1); }
+.compare-block .anchor-btn:hover { background: rgba(255,255,255,0.1); }
+.compare-block .anchor-btn.selected { border-color: var(--green); background: rgba(29,107,69,0.2); }
+.compare-block .anchor-num { color: rgba(255,255,255,0.3); }
+.compare-block .anchor-btn.selected .anchor-num { color: #5DD4A0; }
+.compare-block .anchor-word { color: rgba(255,255,255,0.25); }
+.compare-block .anchor-btn.selected .anchor-word { color: #5DD4A0; }
+.compare-block .explain-area label { color: rgba(212,201,176,0.5); }
+.compare-block .explain-area textarea { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); color: var(--white); }
+.compare-block .explain-area textarea:focus { border-color: var(--green); }
+.metric-divider { border: none; border-top: 1px solid rgba(212,201,176,0.15); margin: 36px 0; }
+.metric-star { display: inline-block; width: 6px; height: 6px; background: var(--green); border-radius: 50%; margin-right: 8px; vertical-align: middle; }
+
+/* Antes/después inline */
+.compare-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 8px; }
+.compare-col-label { font-size: 11px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 10px; }
+.compare-col-label.antes { color: rgba(212,201,176,0.5); }
+.compare-col-label.ahora { color: #5DD4A0; }
+.compare-val { font-family: var(--font-display); font-size: 36px; font-weight: 300; color: rgba(255,255,255,0.2); line-height: 1; }
+.compare-val.ahora { color: #5DD4A0; }
+.compare-delta { font-size: 12px; font-weight: 300; color: rgba(212,201,176,0.4); margin-top: 4px; }
+
+/* Checklist de módulos */
+.checklist { display: flex; flex-direction: column; gap: 2px; }
+.check-item { display: grid; grid-template-columns: 44px 1fr auto; gap: 16px; align-items: center; padding: 16px 20px; background: var(--white); border: 1.5px solid var(--sand); border-radius: 2px; cursor: pointer; transition: all 0.15s; }
+.check-item:hover { background: var(--cream-dark); }
+.check-item.checked { border-color: var(--green); }
+.check-box { width: 22px; height: 22px; border: 1.5px solid var(--sand); border-radius: 2px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.15s; }
+.check-item.checked .check-box { background: var(--green); border-color: var(--green); }
+.check-mark { font-size: 12px; color: var(--white); opacity: 0; transition: opacity 0.15s; }
+.check-item.checked .check-mark { opacity: 1; }
+.check-text { font-size: 14px; color: var(--ink-soft); font-weight: 300; line-height: 1.4; }
+.check-item.checked .check-text { color: var(--ink); font-weight: 400; }
+.check-modulo { font-size: 11px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--sand); white-space: nowrap; }
+.check-item.checked .check-modulo { color: var(--green); }
+
+/* Decisión siguiente etapa */
+.decision-opts { display: flex; flex-direction: column; gap: 10px; }
+.decision-opt { display: grid; grid-template-columns: 20px 1fr; gap: 16px; align-items: start; padding: 20px 24px; background: var(--white); border: 1.5px solid var(--sand); border-radius: 2px; cursor: pointer; transition: all 0.15s; }
+.decision-opt:hover { background: var(--cream-dark); }
+.decision-opt.selected { border-color: var(--rust); background: var(--rust-light); }
+.decision-opt input { display: none; }
+.decision-dot { width: 16px; height: 16px; border: 1.5px solid var(--sand); border-radius: 50%; flex-shrink: 0; margin-top: 3px; position: relative; transition: all 0.15s; }
+.decision-opt.selected .decision-dot { border-color: var(--rust); background: var(--rust); }
+.decision-dot::after { content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); width: 5px; height: 5px; border-radius: 50%; background: var(--white); opacity: 0; }
+.decision-opt.selected .decision-dot::after { opacity: 1; }
+.decision-label { font-size: 15px; font-weight: 500; color: var(--ink); margin-bottom: 4px; }
+.decision-opt.selected .decision-label { color: var(--rust); }
+.decision-desc { font-size: 13px; font-weight: 300; color: var(--ink-soft); line-height: 1.6; }
+
+/* Textarea libre */
+.textarea-libre { width: 100%; background: var(--white); border: 1.5px solid var(--sand); border-radius: 2px; padding: 16px 18px; font-family: var(--font-body); font-size: 15px; color: var(--ink); resize: vertical; min-height: 100px; outline: none; transition: border-color 0.15s; line-height: 1.6; }
+.textarea-libre:focus { border-color: var(--green); }
+
+/* Submit */
+.submit-area { padding: 0 48px 100px; max-width: 820px; }
+.submit-note { font-size: 14px; font-weight: 300; color: var(--ink-soft); line-height: 1.7; margin-bottom: 28px; font-style: italic; }
+.btn-submit { display: inline-flex; align-items: center; gap: 12px; background: var(--green); color: var(--white); font-family: var(--font-body); font-size: 15px; font-weight: 500; padding: 16px 36px; border: none; border-radius: 2px; cursor: pointer; transition: all 0.2s; letter-spacing: 0.02em; }
+.btn-submit:hover { background: #155234; transform: translateY(-1px); }
+.btn-submit:active { transform: translateY(0); }
+
+.saved-banner { display: none; position: fixed; bottom: 32px; right: 32px; background: var(--ink); color: var(--white); padding: 16px 24px; border-radius: 2px; font-size: 14px; font-weight: 400; z-index: 300; border-left: 3px solid var(--green); }
+.saved-banner.show { display: block; animation: slideIn 0.3s ease; }
+@keyframes slideIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Informe interno */
+.report-section { background: var(--ink); padding: 48px; }
+.report-toggle { font-size: 11px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(245,240,232,0.25); background: none; border: 1px solid rgba(255,255,255,0.1); padding: 8px 18px; cursor: pointer; transition: all 0.2s; border-radius: 2px; }
+.report-toggle:hover { color: #5DD4A0; border-color: #5DD4A0; }
+.report-pre { display: none; margin-top: 24px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.07); padding: 32px; font-family: 'Courier New', monospace; font-size: 12px; color: rgba(245,240,232,0.5); line-height: 1.9; white-space: pre-wrap; }
+.report-pre.visible { display: block; }
+
+footer { background: var(--ink); padding: 40px 48px; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.06); }
+.flogo { font-family: var(--font-display); font-size: 16px; font-weight: 700; color: var(--cream); }
+.flogo span { color: var(--rust-mid); }
+.fcopy { font-size: 13px; font-weight: 300; color: rgba(245,240,232,0.25); }
+
+@media (max-width: 640px) {
+  nav { padding: 16px 24px; }
+  .hero, .form-wrap, .submit-area { padding-left: 24px; padding-right: 24px; }
+  .field-row, .compare-row { grid-template-columns: 1fr; }
+  .compare-block { padding: 28px 24px; }
+  .check-item { grid-template-columns: 44px 1fr; }
+  .check-modulo { display: none; }
+  .report-section, footer { padding-left: 24px; padding-right: 24px; }
+}
+</style>
+</head>
+<body>
+
+<div class="progress-wrap"><div class="progress-bar" id="progress"></div></div>
+
+<nav>
+  <div class="nav-logo">Tune-Up <span>Program</span></div>
+  <div class="nav-tag">Medición de cierre · Stage 1</div>
+</nav>
+
+<section class="hero">
+  <div class="hero-eyebrow">Stage 1 · Cierre del programa</div>
+  <h1 class="hero-headline">Cuatro meses.<br>Ahora vemos<br>qué ha <em>cambiado.</em></h1>
+  <p class="hero-sub">Este formulario cierra el Stage 1. Mismas preguntas que al inicio — para que veas, con datos reales, dónde estaba el taller y dónde está ahora.</p>
+</section>
+
+<div class="form-wrap">
+
+  <!-- BLOQUE 00: DATOS -->
+  <div class="block">
+    <div class="block-header">
+      <span class="block-num">00 —</span>
+      <div>
+        <div class="block-title">Datos del cierre</div>
+        <div class="block-sub">Para generar el informe de balance</div>
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Nombre del taller</label><input type="text" id="nombre_taller" placeholder="Taller Mecánico..."></div>
+      <div class="field"><label>Tu nombre</label><input type="text" id="nombre_dueno" placeholder="Nombre del propietario"></div>
+    </div>
+    <div class="field-row" style="margin-top:16px">
+      <div class="field"><label>Fecha de inicio del programa</label><input type="date" id="fecha_inicio"></div>
+      <div class="field"><label>Fecha de cierre del Stage 1</label><input type="date" id="fecha_cierre"></div>
+    </div>
+  </div>
+
+  <!-- BLOQUE 01: PROCESOS — mismas preguntas que el inicio -->
+  <div class="block">
+    <div class="block-header">
+      <span class="block-num">01 —</span>
+      <div>
+        <div class="block-title">Procesos del taller</div>
+        <div class="block-sub">Módulos 1–4 · Las mismas preguntas que al inicio</div>
+      </div>
+    </div>
+
+    <div class="question">
+      <label class="q-label"><span class="q-num">1.1</span> ¿Tienes las zonas del taller definidas y marcadas físicamente?</label>
+      <div class="options-radio" data-field="zonas">
+        <label class="opt"><input type="radio" name="zonas" value="si"><span class="opt-dot"></span><span class="opt-text">Sí — cada zona está marcada y el equipo la respeta</span></label>
+        <label class="opt"><input type="radio" name="zonas" value="parcial"><span class="opt-dot"></span><span class="opt-text">A medias — hay cierto orden pero no está del todo consolidado</span></label>
+        <label class="opt"><input type="radio" name="zonas" value="no"><span class="opt-dot"></span><span class="opt-text">No — el espacio todavía no tiene zonas claras</span></label>
+      </div>
+    </div>
+
+    <div class="question">
+      <label class="q-label"><span class="q-num">1.2</span> ¿El proceso de recepción activa se aplica de forma sistemática?</label>
+      <div class="options-radio" data-field="recepcion">
+        <label class="opt"><input type="radio" name="recepcion" value="si"><span class="opt-dot"></span><span class="opt-text">Sí — con todos los coches, con o sin el dueño presente</span></label>
+        <label class="opt"><input type="radio" name="recepcion" value="parcial"><span class="opt-dot"></span><span class="opt-text">A medias — se hace pero no siempre completo</span></label>
+        <label class="opt"><input type="radio" name="recepcion" value="no"><span class="opt-dot"></span><span class="opt-text">No — todavía no está instalado</span></label>
+      </div>
+    </div>
+
+    <div class="question">
+      <label class="q-label"><span class="q-num">1.3</span> ¿Mides los tiempos reales por trabajo de forma sistemática?</label>
+      <div class="options-radio" data-field="tiempos">
+        <label class="opt"><input type="radio" name="tiempos" value="si"><span class="opt-dot"></span><span class="opt-text">Sí — registro sistemático y uso los datos para tomar decisiones</span></label>
+        <label class="opt"><input type="radio" name="tiempos" value="aveces"><span class="opt-dot"></span><span class="opt-text">A veces — empezado pero no consolidado</span></label>
+        <label class="opt"><input type="radio" name="tiempos" value="no"><span class="opt-dot"></span><span class="opt-text">No — no he podido instalarlo</span></label>
+      </div>
+    </div>
+
+    <div class="question">
+      <label class="q-label"><span class="q-num">1.4</span> ¿El equipo sigue los procesos sin que estés encima?</label>
+      <div class="options-radio" data-field="autonomia_equipo">
+        <label class="opt"><input type="radio" name="autonomia_equipo" value="si"><span class="opt-dot"></span><span class="opt-text">Sí — funcionan bien cuando no estoy, 2–3 horas sin problema</span></label>
+        <label class="opt"><input type="radio" name="autonomia_equipo" value="parcial"><span class="opt-dot"></span><span class="opt-text">Mejor que antes — todavía necesitan algo de supervisión</span></label>
+        <label class="opt"><input type="radio" name="autonomia_equipo" value="no"><span class="opt-dot"></span><span class="opt-text">No — si no estoy, el proceso se cae igual que antes</span></label>
+      </div>
+    </div>
+  </div>
+
+  <!-- BLOQUE 02: CLIENTE -->
+  <div class="block">
+    <div class="block-header">
+      <span class="block-num">02 —</span>
+      <div>
+        <div class="block-title">Relación con el cliente</div>
+        <div class="block-sub">Módulo 5 · Seguimiento y fidelización</div>
+      </div>
+    </div>
+
+    <div class="question">
+      <label class="q-label"><span class="q-num">2.1</span> ¿Mandas seguimiento al cliente después de entregar el coche?</label>
+      <div class="options-radio" data-field="seguimiento">
+        <label class="opt"><input type="radio" name="seguimiento" value="si"><span class="opt-dot"></span><span class="opt-text">Sí — mensaje sistemático a todos los clientes tras la entrega</span></label>
+        <label class="opt"><input type="radio" name="seguimiento" value="aveces"><span class="opt-dot"></span><span class="opt-text">A veces — con algunos, sin que sea todavía automático</span></label>
+        <label class="opt"><input type="radio" name="seguimiento" value="no"><span class="opt-dot"></span><span class="opt-text">No — el contacto termina cuando el coche sale</span></label>
+      </div>
+    </div>
+  </div>
+
+  <!-- BLOQUE 03: DIGITAL -->
+  <div class="block">
+    <div class="block-header">
+      <span class="block-num">03 —</span>
+      <div>
+        <div class="block-title">Presencia digital</div>
+        <div class="block-sub">Módulos 5–6 · Google Business, reseñas y visibilidad</div>
+      </div>
+    </div>
+
+    <div class="question">
+      <label class="q-label"><span class="q-num">3.1</span> ¿Tienes perfil de Google Business activo, verificado y optimizado?</label>
+      <div class="options-radio" data-field="google_business">
+        <label class="opt"><input type="radio" name="google_business" value="si_completo"><span class="opt-dot"></span><span class="opt-text">Sí — activo, verificado, con fotos, descripción y respondo reseñas</span></label>
+        <label class="opt"><input type="radio" name="google_business" value="si_basico"><span class="opt-dot"></span><span class="opt-text">Sí — existe pero todavía incompleto o sin gestionar</span></label>
+        <label class="opt"><input type="radio" name="google_business" value="no"><span class="opt-dot"></span><span class="opt-text">No — no lo tengo o no lo controlo</span></label>
+      </div>
+    </div>
+
+    <div class="question">
+      <label class="q-label"><span class="q-num">3.2</span> ¿Cuántas reseñas tienes en Google ahora mismo?</label>
+      <div class="field" style="max-width:200px">
+        <input type="number" id="resenas_cierre" min="0" placeholder="Número de reseñas" style="text-align:center; font-size:20px; font-family:var(--font-display)">
+      </div>
+    </div>
+
+    <div class="question">
+      <label class="q-label"><span class="q-num">3.3</span> ¿Cuál es tu puntuación media en Google ahora?</label>
+      <div class="field" style="max-width:200px">
+        <input type="number" id="puntuacion_cierre" min="1" max="5" step="0.1" placeholder="Ej: 4.6" style="text-align:center; font-size:20px; font-family:var(--font-display)">
+      </div>
+    </div>
+  </div>
+
+  <!-- BLOQUE 04: ECONÓMICO -->
+  <div class="block">
+    <div class="block-header">
+      <span class="block-num">04 —</span>
+      <div>
+        <div class="block-title">Situación económica</div>
+        <div class="block-sub">Referencia orientativa — comparativa con el inicio</div>
+      </div>
+    </div>
+
+    <div class="question">
+      <label class="q-label"><span class="q-num">4.1</span> ¿En qué rango está tu facturación media semanal ahora?</label>
+      <div class="options-radio" data-field="facturacion">
+        <label class="opt"><input type="radio" name="facturacion" value="menos2k"><span class="opt-dot"></span><span class="opt-text">Menos de 2.000€ / semana</span></label>
+        <label class="opt"><input type="radio" name="facturacion" value="2k-4k"><span class="opt-dot"></span><span class="opt-text">Entre 2.000€ y 4.000€ / semana</span></label>
+        <label class="opt"><input type="radio" name="facturacion" value="4k-7k"><span class="opt-dot"></span><span class="opt-text">Entre 4.000€ y 7.000€ / semana</span></label>
+        <label class="opt"><input type="radio" name="facturacion" value="mas7k"><span class="opt-dot"></span><span class="opt-text">Más de 7.000€ / semana</span></label>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /form-wrap -->
+
+<!-- BLOQUE 05: LAS 3 MÉTRICAS — comparativa con inicio -->
+<div class="compare-block" style="margin: 0 48px 64px; max-width: 820px;">
+  <div class="block-header">
+    <span class="block-num" style="color:rgba(212,201,176,0.4)">05 —</span>
+    <div>
+      <div class="block-title" style="color:var(--white)">Las tres métricas principales</div>
+      <div class="block-sub" style="color:rgba(212,201,176,0.5)">Las mismas que al inicio — ahora vemos cuánto han cambiado</div>
+    </div>
+  </div>
+
+  <!-- Métrica A -->
+  <div style="margin-bottom:8px">
+    <div class="q-label" style="color:rgba(253,252,250,0.9); margin-bottom:8px; display:flex; align-items:center; gap:8px;">
+      <span class="metric-star"></span>¿Cómo funciona el taller ahora mismo?
+    </div>
+    <div style="font-size:12px; color:rgba(212,201,176,0.5); margin-bottom:16px; font-style:italic;">Orden, procesos, equipo, ritmo de trabajo. La misma pregunta que al inicio.</div>
+    <div class="compare-row" id="compare-func" style="display:none; margin-bottom:16px;">
+      <div>
+        <div class="compare-col-label antes">Al inicio marcaste</div>
+        <div class="compare-val" id="cv-func-antes">—</div>
+      </div>
+      <div>
+        <div class="compare-col-label ahora">Ahora marcas</div>
+        <div class="compare-val ahora" id="cv-func-ahora">—</div>
+        <div class="compare-delta" id="cd-func"></div>
+      </div>
+    </div>
+    <div class="scale-anchors" data-field="funcionamiento">
+      <button class="anchor-btn" data-val="1"><span class="anchor-num">1</span><span class="anchor-word">Caos</span></button>
+      <button class="anchor-btn" data-val="2"><span class="anchor-num">2</span><span class="anchor-word">Dependencia</span></button>
+      <button class="anchor-btn" data-val="3"><span class="anchor-num">3</span><span class="anchor-word">Parches</span></button>
+      <button class="anchor-btn" data-val="4"><span class="anchor-num">4</span><span class="anchor-word">Estructura</span></button>
+      <button class="anchor-btn" data-val="5"><span class="anchor-num">5</span><span class="anchor-word">Sistema</span></button>
+    </div>
+    <div class="explain-area">
+      <label>¿Qué ha cambiado concretamente desde que empezamos? (opcional)</label>
+      <textarea id="exp_funcionamiento" placeholder="Cuéntanos qué significa este número para ti ahora..."></textarea>
+    </div>
+  </div>
+
+  <hr class="metric-divider">
+
+  <!-- Métrica B -->
+  <div style="margin-bottom:8px">
+    <div class="q-label" style="color:rgba(253,252,250,0.9); margin-bottom:8px; display:flex; align-items:center; gap:8px;">
+      <span class="metric-star"></span>¿Sientes que tienes el control de tu negocio?
+    </div>
+    <div style="font-size:12px; color:rgba(212,201,176,0.5); margin-bottom:16px; font-style:italic;">Saber qué pasa, tomar decisiones, no ir apagando fuegos todo el día.</div>
+    <div class="compare-row" id="compare-ctrl" style="display:none; margin-bottom:16px;">
+      <div>
+        <div class="compare-col-label antes">Al inicio marcaste</div>
+        <div class="compare-val" id="cv-ctrl-antes">—</div>
+      </div>
+      <div>
+        <div class="compare-col-label ahora">Ahora marcas</div>
+        <div class="compare-val ahora" id="cv-ctrl-ahora">—</div>
+        <div class="compare-delta" id="cd-ctrl"></div>
+      </div>
+    </div>
+    <div class="scale-anchors" data-field="control">
+      <button class="anchor-btn" data-val="1"><span class="anchor-num">1</span><span class="anchor-word">Sin control</span></button>
+      <button class="anchor-btn" data-val="2"><span class="anchor-num">2</span><span class="anchor-word">Reactivo</span></button>
+      <button class="anchor-btn" data-val="3"><span class="anchor-num">3</span><span class="anchor-word">Parcial</span></button>
+      <button class="anchor-btn" data-val="4"><span class="anchor-num">4</span><span class="anchor-word">Claro</span></button>
+      <button class="anchor-btn" data-val="5"><span class="anchor-num">5</span><span class="anchor-word">Total</span></button>
+    </div>
+    <div class="explain-area">
+      <label>¿Qué ha cambiado concretamente desde que empezamos? (opcional)</label>
+      <textarea id="exp_control" placeholder="Cuéntanos qué significa este número para ti ahora..."></textarea>
+    </div>
+  </div>
+
+  <hr class="metric-divider">
+
+  <!-- Métrica C -->
+  <div>
+    <div class="q-label" style="color:rgba(253,252,250,0.9); margin-bottom:8px; display:flex; align-items:center; gap:8px;">
+      <span class="metric-star"></span>¿Estás satisfecho con el resultado económico del taller?
+    </div>
+    <div style="font-size:12px; color:rgba(212,201,176,0.5); margin-bottom:16px; font-style:italic;">La misma sensación general — ¿ha cambiado algo en cuatro meses?</div>
+    <div class="compare-row" id="compare-eco" style="display:none; margin-bottom:16px;">
+      <div>
+        <div class="compare-col-label antes">Al inicio marcaste</div>
+        <div class="compare-val" id="cv-eco-antes">—</div>
+      </div>
+      <div>
+        <div class="compare-col-label ahora">Ahora marcas</div>
+        <div class="compare-val ahora" id="cv-eco-ahora">—</div>
+        <div class="compare-delta" id="cd-eco"></div>
+      </div>
+    </div>
+    <div class="scale-anchors" data-field="economico">
+      <button class="anchor-btn" data-val="1"><span class="anchor-num">1</span><span class="anchor-word">Frustración</span></button>
+      <button class="anchor-btn" data-val="2"><span class="anchor-num">2</span><span class="anchor-word">Insatisfecho</span></button>
+      <button class="anchor-btn" data-val="3"><span class="anchor-num">3</span><span class="anchor-word">Regular</span></button>
+      <button class="anchor-btn" data-val="4"><span class="anchor-num">4</span><span class="anchor-word">Satisfecho</span></button>
+      <button class="anchor-btn" data-val="5"><span class="anchor-num">5</span><span class="anchor-word">Muy bien</span></button>
+    </div>
+    <div class="explain-area">
+      <label>¿Qué ha cambiado concretamente desde que empezamos? (opcional)</label>
+      <textarea id="exp_economico" placeholder="Cuéntanos qué significa este número para ti ahora..."></textarea>
+    </div>
+  </div>
+</div>
+
+<div class="form-wrap">
+
+  <!-- BLOQUE 06: MÉTRICAS CONTEXTO -->
+  <div class="block">
+    <div class="block-header">
+      <span class="block-num">06 —</span>
+      <div>
+        <div class="block-title">Métricas de contexto</div>
+        <div class="block-sub">Comparativa rápida con el punto de inicio</div>
+      </div>
+    </div>
+
+    <div class="question">
+      <label class="q-label"><span class="q-num">6.1</span> Autonomía del equipo sin supervisión directa</label>
+      <div class="scale-anchors" data-field="autonomia" style="max-width:500px">
+        <button class="anchor-btn" data-val="1"><span class="anchor-num">1</span><span class="anchor-word">Nula</span></button>
+        <button class="anchor-btn" data-val="2"><span class="anchor-num">2</span><span class="anchor-word">Baja</span></button>
+        <button class="anchor-btn" data-val="3"><span class="anchor-num">3</span><span class="anchor-word">Media</span></button>
+        <button class="anchor-btn" data-val="4"><span class="anchor-num">4</span><span class="anchor-word">Alta</span></button>
+        <button class="anchor-btn" data-val="5"><span class="anchor-num">5</span><span class="anchor-word">Total</span></button>
+      </div>
+    </div>
+
+    <div class="question">
+      <label class="q-label"><span class="q-num">6.2</span> Control de rentabilidad por tipo de trabajo</label>
+      <div class="scale-anchors" data-field="rentabilidad" style="max-width:500px">
+        <button class="anchor-btn" data-val="1"><span class="anchor-num">1</span><span class="anchor-word">Sin datos</span></button>
+        <button class="anchor-btn" data-val="2"><span class="anchor-num">2</span><span class="anchor-word">Intuición</span></button>
+        <button class="anchor-btn" data-val="3"><span class="anchor-num">3</span><span class="anchor-word">Aproximado</span></button>
+        <button class="anchor-btn" data-val="4"><span class="anchor-num">4</span><span class="anchor-word">Claro</span></button>
+        <button class="anchor-btn" data-val="5"><span class="anchor-num">5</span><span class="anchor-word">Exacto</span></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- BLOQUE 07: CHECKLIST DE MÓDULOS -->
+  <div class="block">
+    <div class="block-header">
+      <span class="block-num">07 —</span>
+      <div>
+        <div class="block-title">Checklist de cierre</div>
+        <div class="block-sub">Marca los módulos que están consolidados en tu taller</div>
+      </div>
+    </div>
+
+    <div class="checklist">
+      <div class="check-item" data-mod="mod1" onclick="toggleCheck(this)">
+        <div class="check-box"><span class="check-mark">✓</span></div>
+        <div>
+          <div class="check-text">El equipo respeta las zonas sin que el dueño lo recuerde</div>
+          <div style="font-size:12px; color:var(--ink-soft); font-weight:300; margin-top:2px;">Orden, limpieza y checklist de apertura/cierre en marcha</div>
+        </div>
+        <div class="check-modulo">Mód. 1</div>
+      </div>
+      <div class="check-item" data-mod="mod2" onclick="toggleCheck(this)">
+        <div class="check-box"><span class="check-mark">✓</span></div>
+        <div>
+          <div class="check-text">El proceso de recepción activa se hace igual con o sin el dueño presente</div>
+          <div style="font-size:12px; color:var(--ink-soft); font-weight:300; margin-top:2px;">Inspección, hoja firmada, materiales preparados, horas anotadas</div>
+        </div>
+        <div class="check-modulo">Mód. 2</div>
+      </div>
+      <div class="check-item" data-mod="mod3" onclick="toggleCheck(this)">
+        <div class="check-box"><span class="check-mark">✓</span></div>
+        <div>
+          <div class="check-text">Sé cuáles son mis 3 trabajos más rentables y cuáles pierden dinero</div>
+          <div style="font-size:12px; color:var(--ink-soft); font-weight:300; margin-top:2px;">Registro de tiempos funcionando, datos reales encima de la mesa</div>
+        </div>
+        <div class="check-modulo">Mód. 3</div>
+      </div>
+      <div class="check-item" data-mod="mod4" onclick="toggleCheck(this)">
+        <div class="check-box"><span class="check-mark">✓</span></div>
+        <div>
+          <div class="check-text">Puedo ausentarme 2–3 horas sin que el proceso se caiga</div>
+          <div style="font-size:12px; color:var(--ink-soft); font-weight:300; margin-top:2px;">Revisión semanal de equipo instalada, checklists en uso</div>
+        </div>
+        <div class="check-modulo">Mód. 4</div>
+      </div>
+      <div class="check-item" data-mod="mod5" onclick="toggleCheck(this)">
+        <div class="check-box"><span class="check-mark">✓</span></div>
+        <div>
+          <div class="check-text">El seguimiento post-entrega funciona sin que tenga que recordarlo</div>
+          <div style="font-size:12px; color:var(--ink-soft); font-weight:300; margin-top:2px;">Mensaje sistemático y sistema de reseñas en marcha</div>
+        </div>
+        <div class="check-modulo">Mód. 5</div>
+      </div>
+      <div class="check-item" data-mod="mod6" onclick="toggleCheck(this)">
+        <div class="check-box"><span class="check-mark">✓</span></div>
+        <div>
+          <div class="check-text">Google Business optimizado y publico al menos 1 post al mes</div>
+          <div style="font-size:12px; color:var(--ink-soft); font-weight:300; margin-top:2px;">Perfil completo, reseñas con respuesta, contenido activo</div>
+        </div>
+        <div class="check-modulo">Mód. 6</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BLOQUE 08: BALANCE -->
+  <div class="block">
+    <div class="block-header">
+      <span class="block-num">08 —</span>
+      <div>
+        <div class="block-title">El balance en tus palabras</div>
+        <div class="block-sub">Lo que tú ves — más valioso que cualquier número</div>
+      </div>
+    </div>
+
+    <div class="question">
+      <label class="q-label"><span class="q-num">8.1</span> ¿Qué es lo que más ha cambiado en el taller desde que empezamos?</label>
+      <textarea class="textarea-libre" id="cambio_principal" placeholder="Cuéntalo con tus palabras, sin filtros..."></textarea>
+    </div>
+
+    <div class="question">
+      <label class="q-label"><span class="q-num">8.2</span> ¿Qué ha costado más de lo que esperabas? ¿Qué no ha salido como pensabas?</label>
+      <textarea class="textarea-libre" id="lo_que_ha_costado" placeholder="Sé honesto — esto nos ayuda a mejorar el programa..."></textarea>
+    </div>
+
+    <div class="question">
+      <label class="q-label"><span class="q-num">8.3</span> Si tuvieras que contarle a otro dueño de taller qué ha supuesto el programa, ¿qué le dirías?</label>
+      <textarea class="textarea-libre" id="para_otro_dueno" placeholder="En tus propias palabras..."></textarea>
+    </div>
+  </div>
+
+  <!-- BLOQUE 09: DECISIÓN -->
+  <div class="block">
+    <div class="block-header">
+      <span class="block-num">09 —</span>
+      <div>
+        <div class="block-title">¿Qué tiene sentido ahora?</div>
+        <div class="block-sub">Sin compromiso — solo para llegar a la llamada con claridad</div>
+      </div>
+    </div>
+
+    <div class="question">
+      <label class="q-label">Pensando en lo que has construido estos cuatro meses, ¿hacia dónde apunta el siguiente paso?</label>
+      <div class="decision-opts">
+        <div class="decision-opt" onclick="selectDecision(this, 'stage2')">
+          <input type="radio" name="decision" value="stage2">
+          <div class="decision-dot"></div>
+          <div>
+            <div class="decision-label">Continuar al Stage 2</div>
+            <div class="decision-desc">Quiero seguir trabajando en captación activa, fidelización avanzada y escalar el equipo. Los sistemas del Stage 1 están instalados y quiero construir encima.</div>
+          </div>
+        </div>
+        <div class="decision-opt" onclick="selectDecision(this, 'extension')">
+          <input type="radio" name="decision" value="extension">
+          <div class="decision-dot"></div>
+          <div>
+            <div class="decision-label">Necesito más tiempo para consolidar</div>
+            <div class="decision-desc">Hay módulos que todavía no están del todo instalados. Prefiero asegurar la base antes de avanzar — una extensión tiene sentido ahora.</div>
+          </div>
+        </div>
+        <div class="decision-opt" onclick="selectDecision(this, 'cierre')">
+          <input type="radio" name="decision" value="cierre">
+          <div class="decision-dot"></div>
+          <div>
+            <div class="decision-label">Cerrar el Stage 1 y seguir solo</div>
+            <div class="decision-desc">Tengo los seis sistemas instalados y me siento preparado para mantenerlos sin acompañamiento. Quiero ver cómo funciona el taller con lo construido.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="question" style="margin-top:8px">
+      <label class="q-label"><span class="q-num">9.1</span> ¿Hay algo más que quieras decirme antes de la llamada de cierre?</label>
+      <textarea class="textarea-libre" id="notas_cierre" placeholder="Cualquier cosa que quieras que sepa antes de vernos..."></textarea>
+    </div>
+  </div>
+
+</div><!-- /form-wrap -->
+
+<div class="submit-area">
+  <p class="submit-note">Tus respuestas se guardan en este dispositivo y las veremos juntos en la llamada de cierre. Cuanto más honesto seas, más útil es la conversación.</p>
+  <button class="btn-submit" onclick="guardar()">Guardar y descargar informe de cierre →</button>
+</div>
+
+<div class="saved-banner" id="banner">✓ Medición guardada correctamente</div>
+
+<!-- INFORME INTERNO -->
+<div class="report-section">
+  <button class="report-toggle" onclick="document.getElementById('rp').classList.toggle('visible')">[ Informe comparativo — solo para uso interno ]</button>
+  <pre class="report-pre" id="rp"></pre>
+</div>
+
+<footer>
+  <div class="flogo">The Tune-Up<span> Program</span></div>
+  <div class="fcopy">© 2026 · España y Latinoamérica</div>
+</footer>
+
+<script>
+// Progress bar
+window.addEventListener('scroll', () => {
+  const total = document.documentElement.scrollHeight - window.innerHeight;
+  document.getElementById('progress').style.width = (window.scrollY / total * 100) + '%';
+});
+
+// Radio options
+document.querySelectorAll('.options-radio').forEach(group => {
+  group.querySelectorAll('.opt').forEach(opt => {
+    opt.addEventListener('click', () => {
+      group.querySelectorAll('.opt').forEach(o => o.classList.remove('selected'));
+      opt.classList.add('selected');
+      opt.querySelector('input').checked = true;
+    });
+  });
+});
+
+// Scale anchors — con lógica de comparativa
+const metricasCierre = { funcionamiento: null, control: null, economico: null };
+const metricasInicio = {};
+
+document.querySelectorAll('.scale-anchors').forEach(group => {
+  group.querySelectorAll('.anchor-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      group.querySelectorAll('.anchor-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      const field = group.dataset.field;
+      if (['funcionamiento','control','economico'].includes(field)) {
+        metricasCierre[field] = parseInt(btn.dataset.val);
+        actualizarComparativa(field);
+      }
+    });
+  });
+});
+
+function actualizarComparativa(field) {
+  const mapId = { funcionamiento: 'func', control: 'ctrl', economico: 'eco' };
+  const id = mapId[field];
+  const valCierre = metricasCierre[field];
+  const valInicio = metricasInicio[field];
+
+  const elAhora = document.getElementById('cv-' + id + '-ahora');
+  const elAntes = document.getElementById('cv-' + id + '-antes');
+  const elDelta = document.getElementById('cd-' + id);
+  const elRow = document.getElementById('compare-' + id);
+
+  if (elAhora) elAhora.textContent = valCierre;
+
+  if (valInicio && valCierre) {
+    const diff = valCierre - valInicio;
+    if (elDelta) {
+      if (diff > 0) elDelta.textContent = '↑ ' + diff + ' punto' + (Math.abs(diff) > 1 ? 's' : '') + ' de mejora';
+      else if (diff < 0) elDelta.textContent = '↓ ' + Math.abs(diff) + ' punto' + (Math.abs(diff) > 1 ? 's' : '') + ' menos';
+      else elDelta.textContent = 'Sin cambio respecto al inicio';
+    }
+  }
+
+  if (valCierre && elRow) elRow.style.display = 'grid';
+}
+
+// Checklist de módulos
+function toggleCheck(el) {
+  el.classList.toggle('checked');
+}
+
+// Decisión siguiente etapa
+function selectDecision(el, val) {
+  document.querySelectorAll('.decision-opt').forEach(d => d.classList.remove('selected'));
+  el.classList.add('selected');
+  el.querySelector('input').checked = true;
+}
+
+// Recoger datos
+function recoger() {
+  const d = {};
+  d.nombre_taller   = document.getElementById('nombre_taller').value;
+  d.nombre_dueno    = document.getElementById('nombre_dueno').value;
+  d.fecha_inicio    = document.getElementById('fecha_inicio').value;
+  d.fecha_cierre    = document.getElementById('fecha_cierre').value;
+  d.resenas_cierre  = document.getElementById('resenas_cierre').value;
+  d.puntuacion_cierre = document.getElementById('puntuacion_cierre').value;
+  d.cambio_principal  = document.getElementById('cambio_principal').value;
+  d.lo_que_ha_costado = document.getElementById('lo_que_ha_costado').value;
+  d.para_otro_dueno   = document.getElementById('para_otro_dueno').value;
+  d.notas_cierre      = document.getElementById('notas_cierre').value;
+  d.exp_funcionamiento = document.getElementById('exp_funcionamiento').value;
+  d.exp_control     = document.getElementById('exp_control').value;
+  d.exp_economico   = document.getElementById('exp_economico').value;
+
+  // Radios
+  ['zonas','recepcion','tiempos','autonomia_equipo','seguimiento','google_business','facturacion'].forEach(f => {
+    const el = document.querySelector(`input[name="${f}"]:checked`);
+    d[f] = el ? el.value : '';
+  });
+
+  // Decisión
+  const dec = document.querySelector('input[name="decision"]:checked');
+  d.decision = dec ? dec.value : '';
+
+  // Scales
+  ['funcionamiento','control','economico','autonomia','rentabilidad'].forEach(f => {
+    const el = document.querySelector(`.scale-anchors[data-field="${f}"] .anchor-btn.selected`);
+    d[f] = el ? el.dataset.val : '';
+  });
+
+  // Checklist módulos
+  d.modulos_consolidados = Array.from(document.querySelectorAll('.check-item.checked'))
+    .map(el => el.dataset.mod);
+
+  return d;
+}
+
+function guardar() {
+  const d = recoger();
+  localStorage.setItem('tuneup_cierre', JSON.stringify(d));
+  generarInforme(d);
+  generarPDF(d);
+  const banner = document.getElementById('banner');
+  banner.classList.add('show');
+  setTimeout(() => banner.classList.remove('show'), 3000);
+}
+
+function generarPDF(d) {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  const W = 210, H = 297, mg = 20, col = W - mg * 2;
+
+  const CREAM  = [245,240,232];
+  const INK    = [26,23,20];
+  const INK_S  = [61,56,48];
+  const RUST   = [196,68,10];
+  const RUST_L = [245,232,224];
+  const GREEN  = [29,107,69];
+  const GREEN_L= [232,245,238];
+  const SAND   = [212,201,176];
+  const WHITE  = [253,252,250];
+
+  const inicio = JSON.parse(localStorage.getItem('tuneup_inicio') || '{}');
+
+  // ── HELPERS ─────────────────────────────────────────────
+  function rf(x,y,w,h,c){ doc.setFillColor(...c); doc.rect(x,y,w,h,'F'); }
+  function hl(x,y,w,c,t){ doc.setDrawColor(...(c||SAND)); doc.setLineWidth(t||0.2); doc.line(x,y,x+w,y); }
+  function sf(sz,wt,cl){ doc.setFontSize(sz); doc.setFont('helvetica', wt==='bold'?'bold':wt==='italic'?'italic':wt==='bolditalic'?'bolditalic':'normal'); doc.setTextColor(...(cl||INK)); }
+  function wrap(txt,x,y,mw,lh,sz,wt,cl){ sf(sz||9,wt||'normal',cl||INK_S); const ls=doc.splitTextToSize(txt,mw); doc.text(ls,x,y); return y+ls.length*lh; }
+
+  const deltaStr = (a,b) => {
+    if (!a||!b) return '';
+    const d = parseInt(b)-parseInt(a);
+    if (d>0) return '+'+d+' punto'+(Math.abs(d)>1?'s':'');
+    if (d<0) return d+' punto'+(Math.abs(d)>1?'s':'');
+    return 'Sin cambio';
+  };
+  const deltaColor = (a,b) => {
+    if (!a||!b) return SAND;
+    return parseInt(b)>=parseInt(a) ? GREEN : RUST;
+  };
+  const radioLbl = v => ({si:'Sí',no:'No',parcial:'Parcial',aveces:'A veces',si_completo:'Sí — completo',si_basico:'Sí — básico',menos2k:'<2k€/sem','2k-4k':'2–4k€/sem','4k-7k':'4–7k€/sem',mas7k:'>7k€/sem'}[v]||v||'—');
+  const decLbl = v => ({stage2:'Continuar al Stage 2',extension:'Extensión — consolidar más',cierre:'Cerrar Stage 1 y seguir solo'}[v]||'—');
+  const modLbl = m => ({mod1:'Mód.1 — Orden',mod2:'Mód.2 — Recepción',mod3:'Mód.3 — Tiempos',mod4:'Mód.4 — Equipo',mod5:'Mód.5 — Postventa',mod6:'Mód.6 — Captación'}[m]||m);
+
+  // ── PÁGINA 1: PORTADA / RESUMEN ──────────────────────────
+  rf(0,0,W,H,CREAM);
+  rf(0,0,W,6,GREEN);
+
+  sf(7.5,'normal',GREEN); doc.setCharSpace(1.5); doc.text('THE TUNE-UP PROGRAM · STAGE 1',mg,20); doc.setCharSpace(0);
+  sf(32,'bold',INK); doc.text('Informe de cierre.',mg,38);
+  sf(32,'bolditalic',RUST); doc.text('Balance real.',mg,52);
+
+  sf(9,'normal',INK_S);
+  const introLines = doc.splitTextToSize(`Este documento recoge el estado de ${d.nombre_taller||'tu taller'} al finalizar el Stage 1 — con la comparativa directa respecto al punto de partida.`, col);
+  doc.text(introLines, mg, 64);
+
+  hl(mg,76,col,SAND,0.3);
+
+  // Datos cabecera
+  sf(7.5,'normal',GREEN); doc.setCharSpace(1.2); doc.text('TALLER',mg,84); doc.setCharSpace(0);
+  sf(15,'bold',INK); doc.text(d.nombre_dueno||'—', mg, 92);
+  sf(10,'normal',INK_S); doc.text(d.nombre_taller||'—', mg, 99);
+  sf(8,'normal',SAND); doc.text(`Inicio: ${d.fecha_inicio||inicio.fecha_inicio||'—'}   ·   Cierre: ${d.fecha_cierre||'—'}`, mg, 106);
+
+  // Bloque métricas 3 columnas
+  const metricas = [
+    { label:'Funcionamiento', antes: inicio.funcionamiento, ahora: d.funcionamiento },
+    { label:'Control',        antes: inicio.control,        ahora: d.control        },
+    { label:'Económico',      antes: inicio.economico,      ahora: d.economico      },
+  ];
+  const bY=116, bH=38, bW=(col-8)/3;
+  metricas.forEach((m,i)=>{
+    const bx=mg+i*(bW+4);
+    const bg = m.ahora && m.antes && parseInt(m.ahora)>=parseInt(m.antes) ? GREEN_L : RUST_L;
+    rf(bx,bY,bW,bH,bg);
+    sf(6.5,'normal',GREEN); doc.setCharSpace(1); doc.text(m.label.toUpperCase(),bx+6,bY+8); doc.setCharSpace(0);
+    // Antes
+    sf(9,'normal',SAND); doc.text('Antes',bx+6,bY+17);
+    sf(14,'bold',INK_S); doc.text(m.antes||'—',bx+22,bY+17);
+    // Ahora
+    sf(9,'normal',GREEN); doc.text('Ahora',bx+6,bY+27);
+    sf(14,'bold',INK); doc.text(m.ahora||'—',bx+24,bY+27);
+    // Delta
+    const ds = deltaStr(m.antes, m.ahora);
+    if(ds){ sf(7,'normal',deltaColor(m.antes,m.ahora)); doc.text(ds,bx+6,bY+34); }
+  });
+
+  // Reseñas
+  const rsY = bY+bH+10;
+  hl(mg,rsY,col,SAND,0.2);
+  sf(7.5,'normal',GREEN); doc.setCharSpace(1.2); doc.text('RESEÑAS GOOGLE',mg,rsY+8); doc.setCharSpace(0);
+  sf(9,'normal',INK_S);
+  doc.text(`Al inicio: ${inicio.resenas_inicio||'—'} reseñas · ${inicio.puntuacion_inicio||'—'}★`, mg, rsY+16);
+  sf(9,'bold',INK);
+  doc.text(`Al cierre: ${d.resenas_cierre||'—'} reseñas · ${d.puntuacion_cierre||'—'}★`, mg, rsY+24);
+  const resDelta = (parseInt(d.resenas_cierre)||0)-(parseInt(inicio.resenas_inicio)||0);
+  if(resDelta>0){ sf(8,'normal',GREEN); doc.text(`+${resDelta} reseñas nuevas durante el programa`, mg, rsY+32); }
+
+  // Módulos consolidados
+  const modsY = rsY+42;
+  hl(mg,modsY,col,SAND,0.2);
+  sf(7.5,'normal',GREEN); doc.setCharSpace(1.2); doc.text('MÓDULOS CONSOLIDADOS',mg,modsY+8); doc.setCharSpace(0);
+  const todosModulos = ['mod1','mod2','mod3','mod4','mod5','mod6'];
+  const consolidados = d.modulos_consolidados||[];
+  let mX = mg, mY2 = modsY+16;
+  todosModulos.forEach((mod,i)=>{
+    const ok = consolidados.includes(mod);
+    const mW = (col-10)/3;
+    if(i>0 && i%3===0){ mX=mg; mY2+=14; }
+    rf(mX, mY2, mW, 11, ok?GREEN_L:CREAM);
+    sf(7, ok?'bold':'normal', ok?GREEN:SAND);
+    doc.text((ok?'✓ ':'○ ')+modLbl(mod).replace('Mód.','').trim(), mX+4, mY2+7.5);
+    mX += mW+5;
+  });
+
+  // ── PÁGINA 2: LO QUE HAS CONSEGUIDO ─────────────────────
+  doc.addPage();
+  rf(0,0,W,H,WHITE);
+  rf(0,0,W,6,GREEN);
+
+  let cy = 18;
+
+  sf(7.5,'normal',GREEN); doc.setCharSpace(1.5); doc.text('THE TUNE-UP PROGRAM · STAGE 1',mg,cy); doc.setCharSpace(0);
+  cy+=10;
+  sf(22,'bold',INK); doc.text('Lo que has conseguido',mg,cy); cy+=9;
+  sf(22,'bolditalic',RUST); doc.text('en cuatro meses.', mg, cy); cy+=12;
+  sf(9,'normal',INK_S);
+  const resumenLines = doc.splitTextToSize(`${d.nombre_dueno||'Aquí'} tienes un resumen de todo lo que ha cambiado en ${d.nombre_taller||'tu taller'} desde que empezamos. No son objetivos — son resultados reales, medidos al inicio y al cierre.`, col);
+  doc.text(resumenLines, mg, cy); cy += resumenLines.length*4.8+8;
+
+  hl(mg,cy,col,SAND,0.2); cy+=10;
+
+  // Función para generar los bloques de logro
+  function bloqueLogro(titulo, textoMejora, textoSinCambio, hayMejora, hayDatos) {
+    if(cy > H-44){ doc.addPage(); rf(0,0,W,H,WHITE); rf(0,0,W,6,GREEN); cy=18; }
+    const texto = hayDatos ? (hayMejora ? textoMejora : textoSinCambio) : null;
+    if(!texto) return;
+    const lineas = doc.splitTextToSize(texto, col-14);
+    const bH = 14 + lineas.length*5;
+    rf(mg, cy, 3, bH, hayMejora ? GREEN : SAND);
+    rf(mg+3, cy, col-3, bH, hayMejora ? GREEN_L : CREAM);
+    sf(8,'bold', hayMejora ? GREEN : INK_S); doc.text(titulo, mg+10, cy+9);
+    sf(8,'normal', INK_S); doc.text(lineas, mg+10, cy+15);
+    cy += bH+6;
+  }
+
+  // Lógica por área — compara inicio vs cierre y genera texto
+  const mejoraFunc = inicio.funcionamiento && d.funcionamiento && parseInt(d.funcionamiento) > parseInt(inicio.funcionamiento);
+  const igualFunc  = inicio.funcionamiento && d.funcionamiento && parseInt(d.funcionamiento) === parseInt(inicio.funcionamiento);
+
+  const textosFuncionamiento = {
+    '1-2': 'El taller ha salido del caos. Antes todo dependía de la memoria y la intuición. Ahora hay una estructura básica que funciona, aunque todavía en construcción.',
+    '1-3': 'Un salto importante. De trabajar apagando fuegos a tener procesos que aguantan sin que estés encima en todo momento.',
+    '1-4': 'Cuatro meses atrás el taller era impredecible. Ahora tiene estructura real: procesos definidos, equipo que los sigue, y un día a día mucho más ordenado.',
+    '1-5': 'De caos a sistema. Es el mayor salto posible. El taller funciona de forma predecible, con o sin ti.',
+    '2-3': 'El taller ha pasado de depender de ti a tener procesos que el equipo sigue. El cuello de botella se ha reducido considerablemente.',
+    '2-4': 'Muy buen progreso. De un taller que no funcionaba sin el dueño a uno con estructura clara y equipo autónomo en el día a día.',
+    '2-5': 'Excepcional. De dependencia total a sistema completo. El equipo funciona bien sin supervisión constante.',
+    '3-4': 'Los parches han dado paso a una estructura real. Los procesos se mantienen y el equipo los respeta.',
+    '3-5': 'De ir tapando agujeros a tener un sistema que se sostiene solo. Un cambio profundo en cómo funciona el taller.',
+    '4-5': 'El último paso: de tener estructura a tener un sistema. El taller funciona de forma predecible y escalable.',
+  };
+  const keyFunc = inicio.funcionamiento && d.funcionamiento ? `${inicio.funcionamiento}-${d.funcionamiento}` : null;
+  bloqueLogro(
+    'Cómo funciona el taller',
+    textosFuncionamiento[keyFunc] || `Has pasado de un ${inicio.funcionamiento} a un ${d.funcionamiento} en la escala de funcionamiento. Un avance real y medible.`,
+    igualFunc ? `Tu valoración del funcionamiento se mantiene en ${d.funcionamiento}. Los sistemas instalados están aguantando — el reto ahora es seguir construyendo encima.` : null,
+    mejoraFunc, !!(inicio.funcionamiento && d.funcionamiento)
+  );
+
+  const mejoraCtrl = inicio.control && d.control && parseInt(d.control) > parseInt(inicio.control);
+  const igualCtrl  = inicio.control && d.control && parseInt(d.control) === parseInt(inicio.control);
+  const textosControl = {
+    '1-2': 'Has pasado de no saber qué está pasando a empezar a reaccionar con más información. Todavía reactivo, pero con más datos encima de la mesa.',
+    '1-3': 'De cero control a control parcial. Sabes qué pasa en el taller, aunque todavía no siempre en tiempo real.',
+    '1-4': 'Un salto grande. Antes ibas apagando fuegos. Ahora tomas decisiones con datos reales y el día a día no te sorprende.',
+    '1-5': 'De no controlar nada a tener control total. El taller ya no te controla a ti — eres tú quien lo dirige.',
+    '2-3': 'Has ganado claridad. De reaccionar constantemente a tener visibilidad parcial sobre lo que pasa en el taller.',
+    '2-4': 'Muy buen avance. Ahora tienes datos, procesos y visibilidad suficiente para tomar decisiones sin improvisar.',
+    '2-5': 'Excepcional. De reactividad total a control completo. El taller ya no dicta tu agenda — tú dictas la del taller.',
+    '3-4': 'El control parcial se ha convertido en control claro. Sabes qué pasa, tienes los datos y puedes anticiparte.',
+    '3-5': 'De parches a sistema de control completo. Una transformación real en cómo gestionas el negocio.',
+    '4-5': 'El paso final al control total. Ahora no solo reaccionas — anticipas.',
+  };
+  const keyCtrl = inicio.control && d.control ? `${inicio.control}-${d.control}` : null;
+  bloqueLogro(
+    'Control del negocio',
+    textosControl[keyCtrl] || `Has pasado de un ${inicio.control} a un ${d.control} en control del negocio. Más claridad, menos fuegos.`,
+    igualCtrl ? `Tu sensación de control se mantiene en ${d.control}. Los procesos instalados están dando estabilidad — la mejora en control suele llegar con más tiempo de rodaje.` : null,
+    mejoraCtrl, !!(inicio.control && d.control)
+  );
+
+  const mejoraEco = inicio.economico && d.economico && parseInt(d.economico) > parseInt(inicio.economico);
+  const igualEco  = inicio.economico && d.economico && parseInt(d.economico) === parseInt(inicio.economico);
+  const textosEco = {
+    '1-2': 'La frustración económica ha bajado. Todavía no es satisfactorio, pero hay más visibilidad sobre qué trabajos dan margen y cuáles no.',
+    '1-3': 'De frustración a una situación regular. El control de tiempos y la recepción activa están empezando a impactar en el resultado.',
+    '1-4': 'Un cambio real. De estar frustrado con el resultado económico a sentirte satisfecho. Los sistemas instalados se están notando en el margen.',
+    '1-5': 'Transformación completa en lo económico. De frustración total a resultado muy bueno. Los procesos, los tiempos y la captación están funcionando juntos.',
+    '2-3': 'Has pasado de insatisfecho a una situación más equilibrada. El control de rentabilidad por trabajo está dando sus primeros frutos.',
+    '2-4': 'Buen avance económico. De insatisfacción a satisfacción real, con datos que lo respaldan.',
+    '2-5': 'De insatisfacción a resultado muy bueno. Un salto que normalmente requiere más tiempo — lo has conseguido en cuatro meses.',
+    '3-4': 'De regular a satisfactorio. La combinación de procesos más eficientes y mejor control de tiempos se está notando en el resultado.',
+    '3-5': 'De una situación regular a un resultado muy bueno. Los sistemas de control de tiempos y captación están impactando directamente en el margen.',
+    '4-5': 'El último escalón económico. De satisfecho a muy bien. La eficiencia del taller ya se traduce en resultado real.',
+  };
+  const keyEco = inicio.economico && d.economico ? `${inicio.economico}-${d.economico}` : null;
+  bloqueLogro(
+    'Resultado económico',
+    textosEco[keyEco] || `Has pasado de un ${inicio.economico} a un ${d.economico} en satisfacción económica. El trabajo en procesos y rentabilidad se está notando.`,
+    igualEco ? `Tu valoración económica se mantiene en ${d.economico}. Los cambios en procesos tardan en traducirse en resultado económico — es normal que el impacto completo llegue después del cierre.` : null,
+    mejoraEco, !!(inicio.economico && d.economico)
+  );
+
+  // Procesos — logros concretos por área
+  if(cy > H-60){ doc.addPage(); rf(0,0,W,H,WHITE); rf(0,0,W,6,GREEN); cy=18; }
+  hl(mg,cy,col,SAND,0.2); cy+=8;
+  sf(7.5,'normal',GREEN); doc.setCharSpace(1.5); doc.text('PROCESOS INSTALADOS',mg,cy); doc.setCharSpace(0); cy+=8;
+
+  const logrosConcretos = [];
+
+  if(d.zonas==='si' && inicio.zonas!=='si')
+    logrosConcretos.push('El taller tiene zonas definidas y marcadas físicamente. El equipo sabe dónde está cada cosa sin que nadie tenga que explicarlo.');
+  if(d.recepcion==='si' && inicio.recepcion!=='si')
+    logrosConcretos.push('El proceso de recepción activa está instalado. Cada coche entra con inspección visual, hoja firmada y materiales preparados — siempre.');
+  if(d.tiempos==='si' && inicio.tiempos!=='si')
+    logrosConcretos.push('Ahora mides el tiempo real de cada trabajo. Sabes qué trabajos te dan margen y cuáles te cuestan dinero. Antes lo intuías — ahora lo sabes.');
+  if(d.autonomia_equipo==='si' && inicio.autonomia_equipo!=='si')
+    logrosConcretos.push('El equipo funciona sin que estés encima. Puedes ausentarte 2–3 horas y el proceso no se cae. Eso antes no era posible.');
+  if(d.seguimiento==='si' && inicio.seguimiento!=='si')
+    logrosConcretos.push('El seguimiento post-entrega es sistemático. Cada cliente recibe contacto después de recoger el coche — sin que tengas que recordarlo.');
+  if(d.google_business==='si_completo' && inicio.google_business!=='si_completo')
+    logrosConcretos.push('Google Business está optimizado y activo. El taller tiene presencia online real que trabaja por ti mientras tú trabajas en el taller.');
+
+  // Reseñas
+  const resGanadas = (parseInt(d.resenas_cierre)||0)-(parseInt(inicio.resenas_inicio)||0);
+  if(resGanadas>0)
+    logrosConcretos.push(`Has conseguido ${resGanadas} reseña${resGanadas>1?'s':''} nueva${resGanadas>1?'s':''} en Google durante el programa. Cada reseña es visibilidad que no tenías antes.`);
+
+  // Módulos consolidados
+  const nMods = consolidados.length;
+  if(nMods>0)
+    logrosConcretos.push(`${nMods} de 6 módulos consolidados al cierre del Stage 1. ${nMods===6?'El programa completo instalado en el taller.':nMods>=4?'Una base muy sólida para seguir construyendo.':'Los sistemas clave están en marcha.'}`);
+
+  if(logrosConcretos.length===0)
+    logrosConcretos.push('Los cambios aplicados durante el programa están en proceso de consolidación. El impacto completo se mide con el tiempo de rodaje que viene después.');
+
+  logrosConcretos.forEach((texto,i)=>{
+    if(cy > H-30){ doc.addPage(); rf(0,0,W,H,WHITE); rf(0,0,W,6,GREEN); cy=18; }
+    const ls = doc.splitTextToSize(texto, col-14);
+    const lH = ls.length*5+12;
+    rf(mg, cy, 3, lH, GREEN);
+    rf(mg+3, cy, col-3, lH, i%2===0 ? GREEN_L : [245,250,247]);
+    sf(8,'normal',INK_S); doc.text(ls, mg+10, cy+8);
+    cy += lH+4;
+  });
+
+  // ── PÁGINA 3: COMPARATIVA + BALANCE ─────────────────────
+  doc.addPage();
+  rf(0,0,W,H,WHITE);
+  rf(0,0,W,6,GREEN);
+
+  cy = 18;
+
+  // Procesos — tabla comparativa
+  sf(7.5,'normal',GREEN); doc.setCharSpace(1.5); doc.text('COMPARATIVA DE PROCESOS',mg,cy); doc.setCharSpace(0);
+  cy+=8;
+
+  const procesos = [
+    { label:'Zonas del taller',    antes: radioLbl(inicio.zonas),            ahora: radioLbl(d.zonas) },
+    { label:'Recepción activa',    antes: radioLbl(inicio.recepcion),        ahora: radioLbl(d.recepcion) },
+    { label:'Tiempos por trabajo', antes: radioLbl(inicio.tiempos),          ahora: radioLbl(d.tiempos) },
+    { label:'Autonomía equipo',    antes: radioLbl(inicio.autonomia_equipo), ahora: radioLbl(d.autonomia_equipo) },
+    { label:'Seguimiento cliente', antes: radioLbl(inicio.seguimiento),      ahora: radioLbl(d.seguimiento) },
+    { label:'Google Business',     antes: radioLbl(inicio.google_business),  ahora: radioLbl(d.google_business) },
+    { label:'Facturación semanal', antes: radioLbl(inicio.facturacion),      ahora: radioLbl(d.facturacion) },
+  ];
+
+  // Cabecera tabla
+  rf(mg,cy,col,8,INK);
+  sf(7,'bold',WHITE); doc.text('Área',mg+4,cy+5.5);
+  sf(7,'bold',WHITE); doc.text('Al inicio',mg+80,cy+5.5);
+  sf(7,'bold',WHITE); doc.text('Al cierre',mg+140,cy+5.5);
+  cy+=8;
+
+  procesos.forEach((p,i)=>{
+    rf(mg,cy,col,9,i%2===0?CREAM:WHITE);
+    sf(7.5,'normal',INK); doc.text(p.label,mg+4,cy+6);
+    sf(7.5,'normal',INK_S); doc.text(p.antes,mg+80,cy+6);
+    sf(7.5,'bold',INK); doc.text(p.ahora,mg+140,cy+6);
+    cy+=9;
+  });
+  cy+=8;
+
+  // Balance en sus palabras
+  hl(mg,cy,col,SAND,0.2); cy+=8;
+  sf(7.5,'normal',GREEN); doc.setCharSpace(1.5); doc.text('BALANCE EN SUS PALABRAS',mg,cy); doc.setCharSpace(0);
+  cy+=8;
+
+  const preguntas = [
+    { label:'Lo que más ha cambiado', val: d.cambio_principal },
+    { label:'Lo que ha costado más',  val: d.lo_que_ha_costado },
+    { label:'Para otro dueño de taller', val: d.para_otro_dueno },
+  ];
+
+  preguntas.forEach(p=>{
+    if(!p.val) return;
+    if(cy>H-40){ doc.addPage(); rf(0,0,W,H,WHITE); rf(0,0,W,6,GREEN); cy=18; }
+    sf(7,'bold',GREEN); doc.text(p.label,mg,cy); cy+=5;
+    sf(8,'italic',INK_S);
+    const ls = doc.splitTextToSize(`"${p.val}"`,col);
+    doc.text(ls,mg,cy); cy+=ls.length*4.5+8;
+  });
+
+  // Decisión
+  if(cy>H-40){ doc.addPage(); rf(0,0,W,H,WHITE); rf(0,0,W,6,GREEN); cy=18; }
+  hl(mg,cy,col,SAND,0.2); cy+=8;
+  sf(7.5,'normal',GREEN); doc.setCharSpace(1.5); doc.text('DECISIÓN SIGUIENTE ETAPA',mg,cy); doc.setCharSpace(0);
+  cy+=8;
+  rf(mg,cy,col,14,d.decision==='stage2'?GREEN_L:d.decision==='extension'?[250,238,218]:CREAM);
+  sf(9,'bold',INK); doc.text('→ '+decLbl(d.decision),mg+6,cy+9.5);
+  cy+=14;
+
+  if(d.notas_cierre){ cy+=6; sf(8,'italic',INK_S); const nl=doc.splitTextToSize(`Notas: "${d.notas_cierre}"`,col); doc.text(nl,mg,cy); cy+=nl.length*4.5; }
+
+  // Footer p2
+  hl(mg,H-14,col,SAND,0.2);
+  sf(7,'normal',SAND); doc.text('The Tune-Up Program · Stage 1',mg,H-9);
+  sf(7,'normal',SAND); doc.text('2 / 2',W-mg,H-9,{align:'right'});
+
+  // Footer páginas — recorrer todas y poner número correcto
+  const totalPages = doc.getNumberOfPages();
+  for(let i=1;i<=totalPages;i++){
+    doc.setPage(i);
+    hl(mg,H-14,col,SAND,0.2);
+    sf(7,'normal',SAND);
+    doc.text('The Tune-Up Program · Stage 1',mg,H-9);
+    doc.text(`${i} / ${totalPages}`,W-mg,H-9,{align:'right'});
+  }
+
+  const nombre = (d.nombre_taller||d.nombre_dueno||'cierre').toLowerCase().replace(/\s+/g,'-');
+  doc.save(`informe-cierre-${nombre}.pdf`);
+}
+
+function generarInforme(d) {
+  const inicio = JSON.parse(localStorage.getItem('tuneup_inicio') || '{}');
+  const now = new Date().toLocaleString('es-ES');
+
+  const deltaLabel = (a, b) => {
+    if (!a || !b) return '—';
+    const diff = parseInt(b) - parseInt(a);
+    if (diff > 0) return `+${diff} ↑`;
+    if (diff < 0) return `${diff} ↓`;
+    return '= Sin cambio';
+  };
+
+  const radioLabel = (v) => ({
+    si: 'Sí', no: 'No', parcial: 'Parcial / A medias', aveces: 'A veces',
+    si_completo: 'Sí — completo', si_basico: 'Sí — básico',
+    menos2k: '<2.000€/sem', '2k-4k': '2–4k€/sem', '4k-7k': '4–7k€/sem', mas7k: '>7k€/sem'
+  }[v] || v || '—');
+
+  const decisionLabel = (v) => ({
+    stage2: 'Continuar al Stage 2',
+    extension: 'Extensión — consolidar más',
+    cierre: 'Cerrar Stage 1 y seguir solo'
+  }[v] || '—');
+
+  const modsLabel = (arr) => arr.length
+    ? arr.map(m => ({ mod1:'Mód.1 Orden', mod2:'Mód.2 Recepción', mod3:'Mód.3 Tiempos', mod4:'Mód.4 Equipo', mod5:'Mód.5 Postventa', mod6:'Mód.6 Captación' }[m] || m)).join(', ')
+    : 'Ninguno marcado';
+
+  const L = [
+    '══════════════════════════════════════════════════',
+    '  THE TUNE-UP PROGRAM — INFORME DE CIERRE · STAGE 1',
+    '══════════════════════════════════════════════════',
+    `  Fecha cierre  : ${now}`,
+    `  Cliente       : ${d.nombre_dueno || '—'}`,
+    `  Taller        : ${d.nombre_taller || '—'}`,
+    `  Inicio        : ${d.fecha_inicio || inicio.fecha_inicio || '—'}`,
+    `  Cierre        : ${d.fecha_cierre || '—'}`,
+    '',
+    '──────────────────────────────────────────────────',
+    '  COMPARATIVA DE MÉTRICAS PRINCIPALES',
+    '──────────────────────────────────────────────────',
+    `  Funcionamiento : ${inicio.funcionamiento || '—'} → ${d.funcionamiento || '—'}   ${deltaLabel(inicio.funcionamiento, d.funcionamiento)}`,
+    `  Control        : ${inicio.control || '—'} → ${d.control || '—'}   ${deltaLabel(inicio.control, d.control)}`,
+    `  Económico      : ${inicio.economico || '—'} → ${d.economico || '—'}   ${deltaLabel(inicio.economico, d.economico)}`,
+    '',
+    '──────────────────────────────────────────────────',
+    '  MÉTRICAS DE CONTEXTO',
+    '──────────────────────────────────────────────────',
+    `  Autonomía equipo  : ${inicio.autonomia || '—'} → ${d.autonomia || '—'}   ${deltaLabel(inicio.autonomia, d.autonomia)}`,
+    `  Control rentab.   : ${inicio.rentabilidad || '—'} → ${d.rentabilidad || '—'}   ${deltaLabel(inicio.rentabilidad, d.rentabilidad)}`,
+    '',
+    '──────────────────────────────────────────────────',
+    '  PROCESOS — ANTES / AHORA',
+    '──────────────────────────────────────────────────',
+    `  Zonas taller      : ${radioLabel(inicio.zonas)} → ${radioLabel(d.zonas)}`,
+    `  Recepción activa  : ${radioLabel(inicio.recepcion)} → ${radioLabel(d.recepcion)}`,
+    `  Tiempos           : ${radioLabel(inicio.tiempos)} → ${radioLabel(d.tiempos)}`,
+    `  Autonomía equipo  : ${radioLabel(inicio.autonomia_equipo)} → ${radioLabel(d.autonomia_equipo)}`,
+    `  Seguimiento       : ${radioLabel(inicio.seguimiento)} → ${radioLabel(d.seguimiento)}`,
+    `  Google Business   : ${radioLabel(inicio.google_business)} → ${radioLabel(d.google_business)}`,
+    `  Facturación       : ${radioLabel(inicio.facturacion)} → ${radioLabel(d.facturacion)}`,
+    '',
+    '──────────────────────────────────────────────────',
+    '  RESEÑAS GOOGLE',
+    '──────────────────────────────────────────────────',
+    `  Al inicio : ${inicio.resenas_inicio || '—'} reseñas · ${inicio.puntuacion_inicio || '—'}★`,
+    `  Al cierre : ${d.resenas_cierre || '—'} reseñas · ${d.puntuacion_cierre || '—'}★`,
+    '',
+    '──────────────────────────────────────────────────',
+    '  MÓDULOS CONSOLIDADOS',
+    '──────────────────────────────────────────────────',
+    `  ${modsLabel(d.modulos_consolidados)}`,
+    `  (${d.modulos_consolidados.length} de 6)`,
+    '',
+    '──────────────────────────────────────────────────',
+    '  BALANCE EN SUS PALABRAS',
+    '──────────────────────────────────────────────────',
+    `  Lo que más ha cambiado:`,
+    `  "${d.cambio_principal || '—'}"`,
+    '',
+    `  Lo que ha costado más:`,
+    `  "${d.lo_que_ha_costado || '—'}"`,
+    '',
+    `  Para otro dueño de taller:`,
+    `  "${d.para_otro_dueno || '—'}"`,
+    '',
+    '──────────────────────────────────────────────────',
+    '  DECISIÓN SIGUIENTE ETAPA',
+    '──────────────────────────────────────────────────',
+    `  → ${decisionLabel(d.decision)}`,
+    '',
+    d.notas_cierre ? `  Notas: "${d.notas_cierre}"` : '',
+    '',
+    '══════════════════════════════════════════════════',
+  ].filter(l => l !== undefined);
+
+  document.getElementById('rp').textContent = L.join('\n');
+}
+
+// Restaurar al cargar — y cargar datos del inicio para comparativa
+window.addEventListener('load', () => {
+  // Cargar datos de inicio para comparativa
+  const inicio = JSON.parse(localStorage.getItem('tuneup_inicio') || '{}');
+  ['funcionamiento','control','economico'].forEach(f => {
+    if (inicio[f]) {
+      metricasInicio[f] = parseInt(inicio[f]);
+      const mapId = { funcionamiento: 'func', control: 'ctrl', economico: 'eco' };
+      const elAntes = document.getElementById('cv-' + mapId[f] + '-antes');
+      if (elAntes) elAntes.textContent = inicio[f];
+    }
+  });
+
+  // Restaurar formulario de cierre si ya guardado
+  const saved = localStorage.getItem('tuneup_cierre');
+  if (!saved) return;
+  const d = JSON.parse(saved);
+
+  ['nombre_taller','nombre_dueno','fecha_inicio','fecha_cierre',
+   'resenas_cierre','puntuacion_cierre','cambio_principal',
+   'lo_que_ha_costado','para_otro_dueno','notas_cierre',
+   'exp_funcionamiento','exp_control','exp_economico'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el && d[id]) el.value = d[id];
+  });
+
+  ['zonas','recepcion','tiempos','autonomia_equipo','seguimiento','google_business','facturacion'].forEach(f => {
+    if (d[f]) {
+      const el = document.querySelector(`input[name="${f}"][value="${d[f]}"]`);
+      if (el) { el.checked = true; el.closest('.opt').classList.add('selected'); }
+    }
+  });
+
+  ['funcionamiento','control','economico','autonomia','rentabilidad'].forEach(f => {
+    if (d[f]) {
+      const el = document.querySelector(`.scale-anchors[data-field="${f}"] .anchor-btn[data-val="${d[f]}"]`);
+      if (el) {
+        el.classList.add('selected');
+        if (['funcionamiento','control','economico'].includes(f)) {
+          metricasCierre[f] = parseInt(d[f]);
+          actualizarComparativa(f);
+        }
+      }
+    }
+  });
+
+  if (d.decision) {
+    const el = document.querySelector(`input[name="decision"][value="${d.decision}"]`);
+    if (el) el.closest('.decision-opt').classList.add('selected');
+  }
+
+  if (d.modulos_consolidados) {
+    d.modulos_consolidados.forEach(mod => {
+      const el = document.querySelector(`.check-item[data-mod="${mod}"]`);
+      if (el) el.classList.add('checked');
+    });
+  }
+});
+</script>
+</body>
+</html>

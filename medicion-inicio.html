@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diagnóstico de Inicio — The Tune-Up Program</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,400;0,700;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --cream: #F5F0E8; --cream-dark: #EDE7D9; --ink: #1A1714; --ink-soft: #3D3830;
+  --rust: #C4440A; --rust-light: #F5E8E0; --rust-mid: #E8805A;
+  --sand: #D4C9B0; --white: #FDFCFA;
+  --green: #1D6B45; --green-light: #E1F5EE;
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-body: 'DM Sans', sans-serif;
+}
+html { scroll-behavior: smooth; }
+body { background: var(--cream); color: var(--ink); font-family: var(--font-body); font-size: 16px; line-height: 1.6; overflow-x: hidden; }
+
+nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; padding: 20px 48px; display: flex; justify-content: space-between; align-items: center; background: rgba(245,240,232,0.93); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(212,201,176,0.4); }
+.nav-logo { font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--ink); }
+.nav-logo span { color: var(--rust); }
+.nav-tag { font-size: 13px; font-weight: 300; color: var(--ink-soft); font-style: italic; font-family: var(--font-display); }
+
+.progress-wrap { position: fixed; top: 0; left: 0; right: 0; height: 2px; z-index: 200; }
+.progress-bar { height: 2px; background: var(--rust); transition: width 0.4s ease; width: 0%; }
+
+.hero { min-height: 50vh; padding: 140px 48px 72px; position: relative; overflow: hidden; }
+.hero::before { content: ''; position: absolute; top: -80px; right: -200px; width: 600px; height: 600px; background: radial-gradient(circle, rgba(196,68,10,0.05) 0%, transparent 70%); pointer-events: none; }
+.hero-eyebrow { font-size: 12px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: var(--rust); margin-bottom: 28px; display: flex; align-items: center; gap: 12px; }
+.hero-eyebrow::before { content: ''; display: block; width: 32px; height: 1px; background: var(--rust); }
+.hero-headline { font-family: var(--font-display); font-size: clamp(36px, 5vw, 62px); font-weight: 300; line-height: 1.05; letter-spacing: -0.03em; max-width: 700px; margin-bottom: 24px; }
+.hero-headline em { font-style: italic; color: var(--rust); }
+.hero-sub { font-size: 16px; font-weight: 300; color: var(--ink-soft); max-width: 520px; line-height: 1.75; }
+
+.form-wrap { padding: 0 48px 100px; max-width: 820px; }
+
+.block { margin-bottom: 64px; }
+.block-header { display: flex; align-items: center; gap: 14px; margin-bottom: 32px; padding-bottom: 18px; border-bottom: 1px solid var(--sand); }
+.block-num { font-family: var(--font-display); font-size: 13px; font-weight: 300; font-style: italic; color: var(--sand); }
+.block-title { font-family: var(--font-display); font-size: 20px; font-weight: 400; color: var(--ink); letter-spacing: -0.01em; }
+.block-sub { font-size: 13px; color: var(--ink-soft); font-weight: 300; margin-top: 2px; }
+
+.question { margin-bottom: 28px; }
+.question > label, .q-label { display: block; font-size: 15px; font-weight: 400; color: var(--ink); margin-bottom: 12px; line-height: 1.5; }
+.q-num { font-size: 13px; font-weight: 300; color: var(--sand); margin-right: 6px; font-family: var(--font-display); font-style: italic; }
+
+/* Input fields */
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field label { font-size: 13px; font-weight: 400; color: var(--ink-soft); letter-spacing: 0.02em; }
+.field input, .field select {
+  background: var(--white); border: 1.5px solid var(--sand); border-radius: 2px;
+  padding: 12px 16px; font-family: var(--font-body); font-size: 15px; color: var(--ink);
+  transition: border-color 0.15s; outline: none;
+}
+.field input:focus, .field select:focus { border-color: var(--rust); }
+
+/* Radio options */
+.options-radio { display: flex; flex-direction: column; gap: 8px; }
+.opt { display: flex; align-items: center; gap: 14px; padding: 14px 18px; background: var(--white); border: 1.5px solid var(--sand); border-radius: 2px; cursor: pointer; transition: all 0.15s; }
+.opt:hover { background: var(--cream-dark); }
+.opt.selected { border-color: var(--rust); background: var(--white); }
+.opt input { display: none; }
+.opt-dot { width: 16px; height: 16px; border: 1.5px solid var(--sand); border-radius: 50%; flex-shrink: 0; position: relative; transition: all 0.15s; }
+.opt.selected .opt-dot { border-color: var(--rust); background: var(--rust); }
+.opt-dot::after { content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); width: 5px; height: 5px; border-radius: 50%; background: var(--white); opacity: 0; }
+.opt.selected .opt-dot::after { opacity: 1; }
+.opt-text { font-size: 14px; color: var(--ink-soft); font-weight: 300; line-height: 1.4; }
+.opt.selected .opt-text { color: var(--ink); font-weight: 400; }
+
+/* Star scale */
+.scale-wrap { display: flex; flex-direction: column; gap: 16px; }
+.scale-labels { display: flex; justify-content: space-between; font-size: 11px; color: var(--ink-soft); font-weight: 300; padding: 0 4px; }
+.scale-anchors { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+.anchor-btn { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 14px 8px 12px; background: var(--white); border: 1.5px solid var(--sand); border-radius: 2px; cursor: pointer; transition: all 0.15s; text-align: center; }
+.anchor-btn:hover { background: var(--cream-dark); }
+.anchor-btn.selected { border-color: var(--rust); background: var(--rust-light); }
+.anchor-num { font-family: var(--font-display); font-size: 24px; font-weight: 300; color: var(--sand); transition: color 0.15s; }
+.anchor-btn.selected .anchor-num { color: var(--rust); }
+.anchor-word { font-size: 11px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; color: var(--sand); transition: color 0.15s; }
+.anchor-btn.selected .anchor-word { color: var(--rust); }
+
+/* Textarea */
+.explain-area { margin-top: 12px; }
+.explain-area label { font-size: 12px; font-weight: 300; color: var(--ink-soft); font-style: italic; display: block; margin-bottom: 6px; }
+.explain-area textarea { width: 100%; background: var(--white); border: 1.5px solid var(--sand); border-radius: 2px; padding: 12px 16px; font-family: var(--font-body); font-size: 14px; color: var(--ink); resize: vertical; min-height: 72px; outline: none; transition: border-color 0.15s; line-height: 1.6; }
+.explain-area textarea:focus { border-color: var(--rust); }
+
+/* Main metrics block */
+.main-metrics { background: var(--ink); border-radius: 2px; padding: 40px; margin-bottom: 64px; }
+.main-metrics .block-header { border-bottom-color: rgba(212,201,176,0.2); }
+.main-metrics .block-num { color: rgba(212,201,176,0.4); }
+.main-metrics .block-title { color: var(--white); }
+.main-metrics .block-sub { color: rgba(212,201,176,0.6); }
+.main-metrics .q-label { color: rgba(253,252,250,0.9); }
+.main-metrics .anchor-btn { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.1); }
+.main-metrics .anchor-btn:hover { background: rgba(255,255,255,0.1); }
+.main-metrics .anchor-btn.selected { border-color: var(--rust); background: rgba(196,68,10,0.15); }
+.main-metrics .anchor-num { color: rgba(255,255,255,0.3); }
+.main-metrics .anchor-btn.selected .anchor-num { color: var(--rust-mid); }
+.main-metrics .anchor-word { color: rgba(255,255,255,0.25); }
+.main-metrics .anchor-btn.selected .anchor-word { color: var(--rust-mid); }
+.main-metrics .scale-labels { color: rgba(212,201,176,0.4); }
+.main-metrics .explain-area label { color: rgba(212,201,176,0.5); }
+.main-metrics .explain-area textarea { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); color: var(--white); }
+.main-metrics .explain-area textarea:focus { border-color: var(--rust); }
+.metric-divider { border: none; border-top: 1px solid rgba(212,201,176,0.15); margin: 36px 0; }
+.metric-star { display: inline-block; width: 6px; height: 6px; background: var(--rust); border-radius: 50%; margin-right: 8px; vertical-align: middle; }
+
+/* Submit */
+.submit-area { padding: 0 48px 100px; max-width: 820px; }
+.submit-note { font-size: 14px; font-weight: 300; color: var(--ink-soft); line-height: 1.7; margin-bottom: 28px; font-style: italic; }
+.btn-submit { display: inline-flex; align-items: center; gap: 12px; background: var(--rust); color: var(--white); font-family: var(--font-body); font-size: 15px; font-weight: 500; padding: 16px 36px; border: none; border-radius: 2px; cursor: pointer; transition: all 0.2s; letter-spacing: 0.02em; }
+.btn-submit:hover { background: #A33608; transform: translateY(-1px); }
+.btn-submit:active { transform: translateY(0); }
+
+/* Saved banner */
+.saved-banner { display: none; position: fixed; bottom: 32px; right: 32px; background: var(--ink); color: var(--white); padding: 16px 24px; border-radius: 2px; font-size: 14px; font-weight: 400; z-index: 300; border-left: 3px solid var(--rust); }
+.saved-banner.show { display: block; animation: slideIn 0.3s ease; }
+@keyframes slideIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+@media (max-width: 640px) {
+  nav { padding: 16px 24px; }
+  .hero, .form-wrap, .submit-area { padding-left: 24px; padding-right: 24px; }
+  .field-row { grid-template-columns: 1fr; }
+  .main-metrics { padding: 28px 24px; }
+}
+</style>
+</head>
+<body>
+
+<div class="progress-wrap"><div class="progress-bar" id="progress"></div></div>
+
+<nav>
+  <div class="nav-logo">Tune-Up <span>Program</span></div>
+  <div class="nav-tag">Diagnóstico de inicio</div>
+</nav>
+
+<section class="hero">
+  <div class="hero-eyebrow">Stage 1 · Línea base</div>
+  <h1 class="hero-headline">¿Dónde está<br>tu taller <em>hoy?</em></h1>
+  <p class="hero-sub">Este formulario establece el punto de partida del programa. Al final del Stage 1 volverás a rellenarlo — y verás exactamente qué ha cambiado.</p>
+</section>
+
+<div class="form-wrap">
+
+  <!-- CABECERA -->
+  <div class="block">
+    <div class="block-header">
+      <span class="block-num">00 —</span>
+      <div>
+        <div class="block-title">Datos del taller</div>
+        <div class="block-sub">Información básica para personalizar tu informe</div>
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Nombre del taller</label><input type="text" id="nombre_taller" placeholder="Taller Mecánico..."></div>
+      <div class="field"><label>Tu nombre</label><input type="text" id="nombre_dueno" placeholder="Nombre del propietario"></div>
+    </div>
+    <div class="field-row" style="margin-top:16px">
+      <div class="field"><label>Fecha de inicio del programa</label><input type="date" id="fecha_inicio"></div>
+      <div class="field"><label>Número de personas en el equipo (incluyéndote a ti)</label>
+        <select id="equipo">
+          <option value="">Selecciona...</option>
+          <option value="1">Solo yo</option>
+          <option value="2">2 personas</option>
+          <option value="3">3 personas</option>
+          <option value="4">4 personas</option>
+          <option value="5+">5 o más</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- BLOQUE 1: PROCESOS -->
+  <div class="block">
+    <div class="block-header">
+      <span class="block-num">01 —</span>
+      <div>
+        <div class="block-title">Procesos del taller</div>
+        <div class="block-sub">Módulos 1–4 · Orden, recepción, tiempos y equipo</div>
+      </div>
+    </div>
+
+    <div class="question">
+      <label class="q-label"><span class="q-num">1.1</span> ¿Tienes las zonas del taller definidas y marcadas físicamente?</label>
+      <div class="options-radio" data-field="zonas">
+        <label class="opt"><input type="radio" name="zonas" value="si"><span class="opt-dot"></span><span class="opt-text">Sí — cada zona está marcada y el equipo la respeta</span></label>
+        <label class="opt"><input type="radio" name="zonas" value="parcial"><span class="opt-dot"></span><span class="opt-text">A medias — hay cierto orden pero no está definido</span></label>
+        <label class="opt"><input type="radio" name="zonas" value="no"><span class="opt-dot"></span><span class="opt-text">No — el espacio no tiene zonas claras</span></label>
+      </div>
+    </div>
+
+    <div class="question">
+      <label class="q-label"><span class="q-num">1.2</span> ¿Tienes un proceso de recepción activa definido?</label>
+      <div class="options-radio" data-field="recepcion">
+        <label class="opt"><input type="radio" name="recepcion" value="si"><span class="opt-dot"></span><span class="opt-text">Sí — inspección con el cliente, hoja firmada, materiales preparados</span></label>
+        <label class="opt"><input type="radio" name="recepcion" value="parcial"><span class="opt-dot"></span><span class="opt-text">A medias — hay algo pero no es sistemático</span></label>
+        <label class="opt"><input type="radio" name="recepcion" value="no"><span class="opt-dot"></span><span class="opt-text">No — el coche entra sin proceso definido</span></label>
+      </div>
+    </div>
+
+    <div class="question">
+      <label class="q-label"><span class="q-num">1.3</span> ¿Mides los tiempos reales por trabajo?</label>
+      <div class="options-radio" data-field="tiempos">
+        <label class="opt"><input type="radio" name="tiempos" value="si"><span class="opt-dot"></span><span class="opt-text">Sí — registro sistemático de horas por trabajo</span></label>
+        <label class="opt"><input type="radio" name="tiempos" value="aveces"><span class="opt-dot"></span><span class="opt-text">A veces — de forma informal o parcial</span></label>
+        <label class="opt"><input type="radio" name="tiempos" value="no"><span class="opt-dot"></span><span class="opt-text">No — trabajo por intuición y experiencia</span></label>
+      </div>
+    </div>
+
+    <div class="question">
+      <label class="q-label"><span class="q-num">1.4</span> ¿El equipo sigue los procesos sin que estés encima?</label>
+      <div class="options-radio" data-field="autonomia_equipo">
+        <label class="opt"><input type="radio" name="autonomia_equipo" value="si"><span class="opt-dot"></span><span class="opt-text">Sí — funcionan bien cuando no estoy</span></label>
+        <label class="opt"><input type="radio" name="autonomia_equipo" value="parcial"><span class="opt-dot"></span><span class="opt-text">Depende — algunos sí, otros necesitan que esté</span></label>
+        <label class="opt"><input type="radio" name="autonomia_equipo" value="no"><span class="opt-dot"></span><span class="opt-text">No — si no estoy, el proceso se cae</span></label>
+      </div>
+    </div>
+  </div>
+
+  <!-- BLOQUE 2: CLIENTE -->
+  <div class="block">
+    <div class="block-header">
+      <span class="block-num">02 —</span>
+      <div>
+        <div class="block-title">Relación con el cliente</div>
+        <div class="block-sub">Módulo 5 · Seguimiento y fidelización</div>
+      </div>
+    </div>
+
+    <div class="question">
+      <label class="q-label"><span class="q-num">2.1</span> ¿Mandas algún tipo de seguimiento al cliente después de entregar el coche?</label>
+      <div class="options-radio" data-field="seguimiento">
+        <label class="opt"><input type="radio" name="seguimiento" value="si"><span class="opt-dot"></span><span class="opt-text">Sí — mensaje o llamada sistemática tras la entrega</span></label>
+        <label class="opt"><input type="radio" name="seguimiento" value="aveces"><span class="opt-dot"></span><span class="opt-text">A veces — con algunos clientes, sin sistema</span></label>
+        <label class="opt"><input type="radio" name="seguimiento" value="no"><span class="opt-dot"></span><span class="opt-text">No — cuando el coche sale, el contacto termina</span></label>
+      </div>
+    </div>
+  </div>
+
+  <!-- BLOQUE 3: DIGITAL -->
+  <div class="block">
+    <div class="block-header">
+      <span class="block-num">03 —</span>
+      <div>
+        <div class="block-title">Presencia digital</div>
+        <div class="block-sub">Módulos 5–6 · Google Business, reseñas y visibilidad</div>
+      </div>
+    </div>
+
+    <div class="question">
+      <label class="q-label"><span class="q-num">3.1</span> ¿Tienes perfil de Google Business activo y verificado?</label>
+      <div class="options-radio" data-field="google_business">
+        <label class="opt"><input type="radio" name="google_business" value="si_completo"><span class="opt-dot"></span><span class="opt-text">Sí — activo, verificado y con fotos y descripción</span></label>
+        <label class="opt"><input type="radio" name="google_business" value="si_basico"><span class="opt-dot"></span><span class="opt-text">Sí — existe pero sin gestionar o incompleto</span></label>
+        <label class="opt"><input type="radio" name="google_business" value="no"><span class="opt-dot"></span><span class="opt-text">No — no tengo o no lo controlo</span></label>
+      </div>
+    </div>
+
+    <div class="question">
+      <label class="q-label"><span class="q-num">3.2</span> ¿Cuántas reseñas tienes en Google ahora mismo?</label>
+      <div class="field" style="max-width:200px">
+        <input type="number" id="resenas_inicio" min="0" placeholder="Número de reseñas" style="text-align:center; font-size:20px; font-family:var(--font-display)">
+      </div>
+    </div>
+
+    <div class="question">
+      <label class="q-label"><span class="q-num">3.3</span> ¿Cuál es tu puntuación media en Google? (si no tienes, deja en blanco)</label>
+      <div class="field" style="max-width:200px">
+        <input type="number" id="puntuacion_inicio" min="1" max="5" step="0.1" placeholder="Ej: 4.2" style="text-align:center; font-size:20px; font-family:var(--font-display)">
+      </div>
+    </div>
+  </div>
+
+  <!-- BLOQUE 4: ECONÓMICO -->
+  <div class="block">
+    <div class="block-header">
+      <span class="block-num">04 —</span>
+      <div>
+        <div class="block-title">Situación económica</div>
+        <div class="block-sub">Referencia orientativa — no es necesario que sea exacto</div>
+      </div>
+    </div>
+
+    <div class="question">
+      <label class="q-label"><span class="q-num">4.1</span> ¿En qué rango está tu facturación media semanal aproximada?</label>
+      <div class="options-radio" data-field="facturacion">
+        <label class="opt"><input type="radio" name="facturacion" value="menos2k"><span class="opt-dot"></span><span class="opt-text">Menos de 2.000€ / semana</span></label>
+        <label class="opt"><input type="radio" name="facturacion" value="2k-4k"><span class="opt-dot"></span><span class="opt-text">Entre 2.000€ y 4.000€ / semana</span></label>
+        <label class="opt"><input type="radio" name="facturacion" value="4k-7k"><span class="opt-dot"></span><span class="opt-text">Entre 4.000€ y 7.000€ / semana</span></label>
+        <label class="opt"><input type="radio" name="facturacion" value="mas7k"><span class="opt-dot"></span><span class="opt-text">Más de 7.000€ / semana</span></label>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /form-wrap -->
+
+<!-- BLOQUE 5: LAS 3 MÉTRICAS PRINCIPALES -->
+<div class="main-metrics" style="margin: 0 48px 64px; max-width: 820px;">
+  <div class="block-header">
+    <span class="block-num" style="color:rgba(212,201,176,0.4)">05 —</span>
+    <div>
+      <div class="block-title" style="color:var(--white)">Las tres métricas principales</div>
+      <div class="block-sub" style="color:rgba(212,201,176,0.5)">Lo que más importa — ponle nota del 1 al 5 y cuéntanos qué hay detrás</div>
+    </div>
+  </div>
+
+  <!-- Métrica A -->
+  <div style="margin-bottom:8px">
+    <div class="q-label" style="color:rgba(253,252,250,0.9); margin-bottom:8px; display:flex; align-items:center; gap:8px;">
+      <span class="metric-star"></span>¿Cómo funciona el taller ahora mismo?
+    </div>
+    <div style="font-size:12px; color:rgba(212,201,176,0.5); margin-bottom:16px; font-style:italic;">Piensa en el día a día: orden, procesos, equipo, ritmo de trabajo.</div>
+    <div class="scale-labels"><span>Caos</span><span>Dependencia</span><span>Parches</span><span>Estructura</span><span>Sistema</span></div>
+    <div class="scale-anchors" data-field="funcionamiento">
+      <button class="anchor-btn" data-val="1"><span class="anchor-num">1</span><span class="anchor-word">Caos</span></button>
+      <button class="anchor-btn" data-val="2"><span class="anchor-num">2</span><span class="anchor-word">Dependencia</span></button>
+      <button class="anchor-btn" data-val="3"><span class="anchor-num">3</span><span class="anchor-word">Parches</span></button>
+      <button class="anchor-btn" data-val="4"><span class="anchor-num">4</span><span class="anchor-word">Estructura</span></button>
+      <button class="anchor-btn" data-val="5"><span class="anchor-num">5</span><span class="anchor-word">Sistema</span></button>
+    </div>
+    <div class="explain-area">
+      <label>¿Qué te ha llevado a poner este número? (opcional)</label>
+      <textarea id="exp_funcionamiento" placeholder="Cuéntanos qué significa este número para ti..."></textarea>
+    </div>
+  </div>
+
+  <hr class="metric-divider">
+
+  <!-- Métrica B -->
+  <div style="margin-bottom:8px">
+    <div class="q-label" style="color:rgba(253,252,250,0.9); margin-bottom:8px; display:flex; align-items:center; gap:8px;">
+      <span class="metric-star"></span>¿Sientes que tienes el control de tu negocio?
+    </div>
+    <div style="font-size:12px; color:rgba(212,201,176,0.5); margin-bottom:16px; font-style:italic;">Saber qué pasa, tomar decisiones, no ir apagando fuegos todo el día.</div>
+    <div class="scale-labels"><span>Sin control</span><span>Reactivo</span><span>Parcial</span><span>Claro</span><span>Total</span></div>
+    <div class="scale-anchors" data-field="control">
+      <button class="anchor-btn" data-val="1"><span class="anchor-num">1</span><span class="anchor-word">Sin control</span></button>
+      <button class="anchor-btn" data-val="2"><span class="anchor-num">2</span><span class="anchor-word">Reactivo</span></button>
+      <button class="anchor-btn" data-val="3"><span class="anchor-num">3</span><span class="anchor-word">Parcial</span></button>
+      <button class="anchor-btn" data-val="4"><span class="anchor-num">4</span><span class="anchor-word">Claro</span></button>
+      <button class="anchor-btn" data-val="5"><span class="anchor-num">5</span><span class="anchor-word">Total</span></button>
+    </div>
+    <div class="explain-area">
+      <label>¿Qué te ha llevado a poner este número? (opcional)</label>
+      <textarea id="exp_control" placeholder="Cuéntanos qué significa este número para ti..."></textarea>
+    </div>
+  </div>
+
+  <hr class="metric-divider">
+
+  <!-- Métrica C -->
+  <div>
+    <div class="q-label" style="color:rgba(253,252,250,0.9); margin-bottom:8px; display:flex; align-items:center; gap:8px;">
+      <span class="metric-star"></span>¿Estás satisfecho con el resultado económico del taller?
+    </div>
+    <div style="font-size:12px; color:rgba(212,201,176,0.5); margin-bottom:16px; font-style:italic;">No tiene que ser perfectamente cuantificable — es una sensación general.</div>
+    <div class="scale-labels"><span>Frustración</span><span>Insatisfecho</span><span>Regular</span><span>Satisfecho</span><span>Muy bien</span></div>
+    <div class="scale-anchors" data-field="economico">
+      <button class="anchor-btn" data-val="1"><span class="anchor-num">1</span><span class="anchor-word">Frustración</span></button>
+      <button class="anchor-btn" data-val="2"><span class="anchor-num">2</span><span class="anchor-word">Insatisfecho</span></button>
+      <button class="anchor-btn" data-val="3"><span class="anchor-num">3</span><span class="anchor-word">Regular</span></button>
+      <button class="anchor-btn" data-val="4"><span class="anchor-num">4</span><span class="anchor-word">Satisfecho</span></button>
+      <button class="anchor-btn" data-val="5"><span class="anchor-num">5</span><span class="anchor-word">Muy bien</span></button>
+    </div>
+    <div class="explain-area">
+      <label>¿Qué te ha llevado a poner este número? (opcional)</label>
+      <textarea id="exp_economico" placeholder="Cuéntanos qué significa este número para ti..."></textarea>
+    </div>
+  </div>
+</div>
+
+<!-- BLOQUE 6: MÉTRICAS CONTEXTO -->
+<div class="form-wrap">
+  <div class="block">
+    <div class="block-header">
+      <span class="block-num">06 —</span>
+      <div>
+        <div class="block-title">Métricas de contexto</div>
+        <div class="block-sub">Una valoración rápida — solo el número</div>
+      </div>
+    </div>
+
+    <div class="question">
+      <label class="q-label"><span class="q-num">6.1</span> Autonomía del equipo sin supervisión directa</label>
+      <div class="scale-anchors" data-field="autonomia" style="max-width:500px">
+        <button class="anchor-btn" data-val="1"><span class="anchor-num">1</span><span class="anchor-word">Nula</span></button>
+        <button class="anchor-btn" data-val="2"><span class="anchor-num">2</span><span class="anchor-word">Baja</span></button>
+        <button class="anchor-btn" data-val="3"><span class="anchor-num">3</span><span class="anchor-word">Media</span></button>
+        <button class="anchor-btn" data-val="4"><span class="anchor-num">4</span><span class="anchor-word">Alta</span></button>
+        <button class="anchor-btn" data-val="5"><span class="anchor-num">5</span><span class="anchor-word">Total</span></button>
+      </div>
+    </div>
+
+    <div class="question">
+      <label class="q-label"><span class="q-num">6.2</span> Control de rentabilidad por tipo de trabajo</label>
+      <div class="scale-anchors" data-field="rentabilidad" style="max-width:500px">
+        <button class="anchor-btn" data-val="1"><span class="anchor-num">1</span><span class="anchor-word">Sin datos</span></button>
+        <button class="anchor-btn" data-val="2"><span class="anchor-num">2</span><span class="anchor-word">Intuición</span></button>
+        <button class="anchor-btn" data-val="3"><span class="anchor-num">3</span><span class="anchor-word">Aproximado</span></button>
+        <button class="anchor-btn" data-val="4"><span class="anchor-num">4</span><span class="anchor-word">Claro</span></button>
+        <button class="anchor-btn" data-val="5"><span class="anchor-num">5</span><span class="anchor-word">Exacto</span></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- BLOQUE 7: PREGUNTA ABIERTA -->
+  <div class="block">
+    <div class="block-header">
+      <span class="block-num">07 —</span>
+      <div>
+        <div class="block-title">Una última pregunta</div>
+      </div>
+    </div>
+    <div class="question">
+      <label class="q-label">En una frase: ¿cuál es el mayor problema de tu taller ahora mismo?</label>
+      <textarea id="frase_inicio" style="width:100%; background:var(--white); border:1.5px solid var(--sand); border-radius:2px; padding:16px 18px; font-family:var(--font-body); font-size:15px; color:var(--ink); resize:vertical; min-height:88px; outline:none; transition:border-color 0.15s; line-height:1.6;" placeholder="Escribe con tus palabras..."></textarea>
+    </div>
+  </div>
+</div>
+
+<div class="submit-area">
+  <p class="submit-note">Tus respuestas se guardan en este dispositivo. Cuando termines el Stage 1, rellenarás el formulario de cierre y verás el antes/después completo.</p>
+  <button class="btn-submit" onclick="guardar()">Guardar diagnóstico de inicio →</button>
+</div>
+
+<div class="saved-banner" id="banner">✓ Diagnóstico guardado correctamente</div>
+
+<script>
+// Progress bar
+window.addEventListener('scroll', () => {
+  const total = document.documentElement.scrollHeight - window.innerHeight;
+  document.getElementById('progress').style.width = (window.scrollY / total * 100) + '%';
+});
+
+// Radio options
+document.querySelectorAll('.options-radio').forEach(group => {
+  group.querySelectorAll('.opt').forEach(opt => {
+    opt.addEventListener('click', () => {
+      group.querySelectorAll('.opt').forEach(o => o.classList.remove('selected'));
+      opt.classList.add('selected');
+      opt.querySelector('input').checked = true;
+    });
+  });
+});
+
+// Scale anchors
+document.querySelectorAll('.scale-anchors').forEach(group => {
+  group.querySelectorAll('.anchor-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      group.querySelectorAll('.anchor-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+    });
+  });
+});
+
+function recoger() {
+  const d = {};
+  d.nombre_taller   = document.getElementById('nombre_taller').value;
+  d.nombre_dueno    = document.getElementById('nombre_dueno').value;
+  d.fecha_inicio    = document.getElementById('fecha_inicio').value;
+  d.equipo          = document.getElementById('equipo').value;
+  d.resenas_inicio  = document.getElementById('resenas_inicio').value;
+  d.puntuacion_inicio = document.getElementById('puntuacion_inicio').value;
+  d.frase_inicio    = document.getElementById('frase_inicio').value;
+  d.exp_funcionamiento = document.getElementById('exp_funcionamiento').value;
+  d.exp_control     = document.getElementById('exp_control').value;
+  d.exp_economico   = document.getElementById('exp_economico').value;
+
+  // Radios
+  ['zonas','recepcion','tiempos','autonomia_equipo','seguimiento','google_business','facturacion'].forEach(f => {
+    const el = document.querySelector(`input[name="${f}"]:checked`);
+    d[f] = el ? el.value : '';
+  });
+
+  // Scales
+  ['funcionamiento','control','economico','autonomia','rentabilidad'].forEach(f => {
+    const el = document.querySelector(`.scale-anchors[data-field="${f}"] .anchor-btn.selected`);
+    d[f] = el ? el.dataset.val : '';
+  });
+
+  return d;
+}
+
+function guardar() {
+  const d = recoger();
+  localStorage.setItem('tuneup_inicio', JSON.stringify(d));
+  const banner = document.getElementById('banner');
+  banner.classList.add('show');
+  setTimeout(() => banner.classList.remove('show'), 3000);
+}
+
+// Restore on load
+window.addEventListener('load', () => {
+  const saved = localStorage.getItem('tuneup_inicio');
+  if (!saved) return;
+  const d = JSON.parse(saved);
+
+  if (d.nombre_taller) document.getElementById('nombre_taller').value = d.nombre_taller;
+  if (d.nombre_dueno) document.getElementById('nombre_dueno').value = d.nombre_dueno;
+  if (d.fecha_inicio) document.getElementById('fecha_inicio').value = d.fecha_inicio;
+  if (d.equipo) document.getElementById('equipo').value = d.equipo;
+  if (d.resenas_inicio) document.getElementById('resenas_inicio').value = d.resenas_inicio;
+  if (d.puntuacion_inicio) document.getElementById('puntuacion_inicio').value = d.puntuacion_inicio;
+  if (d.frase_inicio) document.getElementById('frase_inicio').value = d.frase_inicio;
+  if (d.exp_funcionamiento) document.getElementById('exp_funcionamiento').value = d.exp_funcionamiento;
+  if (d.exp_control) document.getElementById('exp_control').value = d.exp_control;
+  if (d.exp_economico) document.getElementById('exp_economico').value = d.exp_economico;
+
+  ['zonas','recepcion','tiempos','autonomia_equipo','seguimiento','google_business','facturacion'].forEach(f => {
+    if (d[f]) {
+      const el = document.querySelector(`input[name="${f}"][value="${d[f]}"]`);
+      if (el) { el.checked = true; el.closest('.opt').classList.add('selected'); }
+    }
+  });
+
+  ['funcionamiento','control','economico','autonomia','rentabilidad'].forEach(f => {
+    if (d[f]) {
+      const el = document.querySelector(`.scale-anchors[data-field="${f}"] .anchor-btn[data-val="${d[f]}"]`);
+      if (el) el.classList.add('selected');
+    }
+  });
+});
+</script>
+</body>
+</html>
