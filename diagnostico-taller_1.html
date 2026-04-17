@@ -1,0 +1,1012 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diagnóstico de Tu Taller — The Tune-Up Program</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,400;0,700;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --cream: #F5F0E8; --cream-dark: #EDE7D9; --ink: #1A1714; --ink-soft: #3D3830;
+    --rust: #C4440A; --rust-light: #F5E8E0; --rust-mid: #E8805A;
+    --sand: #D4C9B0; --white: #FDFCFA;
+    --teal: #1D9E75; --teal-light: #E1F5EE;
+    --purple: #534AB7; --purple-light: #EEEDFE;
+    --font-display: 'Fraunces', Georgia, serif;
+    --font-body: 'DM Sans', sans-serif;
+  }
+  html { scroll-behavior: smooth; }
+  body { background: var(--cream); color: var(--ink); font-family: var(--font-body); font-size: 16px; line-height: 1.6; overflow-x: hidden; }
+
+  /* NAV */
+  nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; padding: 20px 48px; display: flex; justify-content: space-between; align-items: center; background: rgba(245,240,232,0.93); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(212,201,176,0.4); }
+  .nav-logo { font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--ink); letter-spacing: -0.02em; }
+  .nav-logo span { color: var(--rust); }
+  .nav-tag { font-size: 13px; font-weight: 300; color: var(--ink-soft); font-style: italic; font-family: var(--font-display); }
+
+  /* PROGRESS */
+  .progress-wrap { position: fixed; top: 0; left: 0; right: 0; height: 2px; z-index: 200; }
+  .progress-bar { height: 2px; background: var(--rust); transition: width 0.4s ease; width: 0%; }
+
+  /* HERO */
+  .hero { min-height: 55vh; padding: 140px 48px 80px; display: flex; flex-direction: column; justify-content: center; position: relative; overflow: hidden; }
+  .hero::before { content: ''; position: absolute; top: -80px; right: -200px; width: 600px; height: 600px; background: radial-gradient(circle, rgba(196,68,10,0.05) 0%, transparent 70%); pointer-events: none; }
+  .hero-eyebrow { font-size: 12px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: var(--rust); margin-bottom: 28px; display: flex; align-items: center; gap: 12px; }
+  .hero-eyebrow::before { content: ''; display: block; width: 32px; height: 1px; background: var(--rust); }
+  .hero-headline { font-family: var(--font-display); font-size: clamp(40px, 6vw, 72px); font-weight: 300; line-height: 1.05; letter-spacing: -0.03em; max-width: 780px; margin-bottom: 28px; }
+  .hero-headline em { font-style: italic; color: var(--rust); }
+  .hero-sub { font-size: 17px; font-weight: 300; color: var(--ink-soft); max-width: 500px; line-height: 1.75; margin-bottom: 40px; }
+  .hero-meta { display: flex; gap: 48px; padding-top: 28px; border-top: 1px solid var(--sand); }
+  .meta-item strong { display: block; font-size: 15px; font-weight: 500; color: var(--ink); font-family: var(--font-display); }
+  .meta-item span { font-size: 12px; color: var(--ink-soft); font-weight: 300; }
+
+  /* FORM */
+  .form-area { padding: 0 48px 100px; max-width: 860px; }
+  .diag-section { margin-bottom: 64px; }
+
+  .section-header { display: flex; align-items: center; gap: 16px; margin-bottom: 32px; padding-bottom: 20px; border-bottom: 1px solid var(--sand); }
+  .vertex-pill { font-size: 11px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; padding: 5px 14px; border-radius: 2px; }
+  .vertex-pill.atraer { background: var(--rust-light); color: var(--rust); }
+  .vertex-pill.confiar { background: var(--teal-light); color: #085041; }
+  .vertex-pill.fidelizar { background: var(--purple-light); color: #26215C; }
+  .vertex-pill.info { background: var(--cream-dark); color: var(--ink-soft); border: 1px solid var(--sand); }
+  .section-header-text h2 { font-family: var(--font-display); font-size: 22px; font-weight: 400; letter-spacing: -0.01em; }
+  .section-header-text p { font-size: 13px; color: var(--ink-soft); font-weight: 300; margin-top: 2px; }
+
+  .question { margin-bottom: 32px; }
+  .question > label { display: block; font-size: 15px; font-weight: 400; color: var(--ink); margin-bottom: 14px; line-height: 1.5; }
+  .q-num { font-size: 13px; font-weight: 300; color: var(--sand); margin-right: 6px; font-family: var(--font-display); font-style: italic; }
+
+  /* OPTIONS */
+  .options { display: flex; flex-direction: column; gap: 8px; }
+  .option { display: grid; grid-template-columns: 18px 1fr auto; gap: 14px; align-items: start; padding: 16px 20px; background: var(--white); border: 1.5px solid var(--sand); border-radius: 2px; cursor: pointer; transition: all 0.15s; }
+  .option:hover { background: var(--cream-dark); border-color: var(--sand); }
+  .option.sel-atraer { background: var(--white); border-color: var(--rust); }
+  .option.sel-confiar { background: var(--white); border-color: var(--teal); }
+  .option.sel-fidelizar { background: var(--white); border-color: var(--purple); }
+  .option.sel-info { background: var(--white); border-color: var(--ink); }
+  .option input[type="radio"] { display: none; }
+  .opt-dot { width: 16px; height: 16px; border: 1.5px solid var(--sand); border-radius: 50%; flex-shrink: 0; margin-top: 2px; position: relative; transition: all 0.15s; }
+  .sel-atraer .opt-dot { border-color: var(--rust); background: var(--rust); }
+  .sel-confiar .opt-dot { border-color: var(--teal); background: var(--teal); }
+  .sel-fidelizar .opt-dot { border-color: var(--purple); background: var(--purple); }
+  .sel-info .opt-dot { border-color: var(--ink); background: var(--ink); }
+  .opt-dot::after { content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); width: 5px; height: 5px; border-radius: 50%; background: var(--white); opacity: 0; }
+  .option[class*="sel-"] .opt-dot::after { opacity: 1; }
+  .opt-text { font-size: 14px; color: var(--ink-soft); font-weight: 300; line-height: 1.5; padding-top: 1px; }
+  .option[class*="sel-"] .opt-text { color: var(--ink); font-weight: 400; }
+  .opt-badge { font-size: 11px; font-weight: 500; padding: 3px 10px; border-radius: 20px; white-space: nowrap; height: fit-content; align-self: center; }
+  .badge-gap { background: var(--rust-light); color: #712B13; }
+  .badge-warn { background: #FAEEDA; color: #633806; }
+  .badge-ok { background: var(--teal-light); color: #085041; }
+
+  /* TEXT */
+  .text-input, .textarea-input { width: 100%; padding: 14px 16px; background: var(--white); border: 1px solid var(--sand); border-radius: 2px; font-size: 15px; font-family: var(--font-body); font-weight: 300; color: var(--ink); outline: none; transition: border-color 0.2s; appearance: none; }
+  .text-input:focus, .textarea-input:focus { border-color: var(--rust); }
+  .text-input::placeholder, .textarea-input::placeholder { color: var(--sand); }
+  .textarea-input { resize: vertical; min-height: 90px; }
+  .input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .fg label { display: block; font-size: 11px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-soft); margin-bottom: 8px; }
+
+  /* SUBMIT */
+  .submit-section { border-top: 1px solid var(--sand); padding-top: 48px; }
+  .submit-note { font-size: 15px; font-weight: 300; color: var(--ink-soft); margin-bottom: 28px; line-height: 1.7; max-width: 480px; font-family: var(--font-display); font-style: italic; }
+  .btn-primary { background: var(--rust); color: var(--white); padding: 18px 48px; border-radius: 2px; font-size: 13px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; border: none; cursor: pointer; transition: all 0.2s; }
+  .btn-primary:hover { background: #A03508; transform: translateY(-1px); }
+  .btn-note { font-size: 13px; color: var(--sand); margin-top: 14px; font-style: italic; font-family: var(--font-display); }
+
+  .fade-in { opacity: 0; transform: translateY(20px); transition: opacity 0.6s ease, transform 0.6s ease; }
+  .fade-in.visible { opacity: 1; transform: translateY(0); }
+
+  /* ===== RESULTS ===== */
+  #results-screen { display: none; }
+  #results-screen.active { display: block; }
+
+  .results-hero { padding: 120px 48px 80px; position: relative; overflow: hidden; }
+  .results-hero::before { content: ''; position: absolute; top: -80px; right: -200px; width: 600px; height: 600px; background: radial-gradient(circle, rgba(196,68,10,0.05) 0%, transparent 70%); pointer-events: none; }
+  .results-eyebrow { font-size: 12px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: var(--rust); margin-bottom: 24px; display: flex; align-items: center; gap: 12px; }
+  .results-eyebrow::before { content: ''; display: block; width: 32px; height: 1px; background: var(--rust); }
+  .results-headline { font-family: var(--font-display); font-size: clamp(40px, 6vw, 72px); font-weight: 300; line-height: 1.05; letter-spacing: -0.03em; max-width: 720px; margin-bottom: 24px; }
+  .results-headline em { font-style: italic; color: var(--rust); }
+  .results-sub { font-size: 17px; font-weight: 300; color: var(--ink-soft); max-width: 500px; line-height: 1.75; }
+
+  /* TRIANGLE BG */
+  .triangle-section { background: var(--ink); padding: 80px 48px; }
+  .tri-label { font-size: 11px; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; color: var(--rust-mid); margin-bottom: 12px; display: flex; align-items: center; gap: 10px; }
+  .tri-label::before { content: ''; display: block; width: 24px; height: 1px; background: var(--rust-mid); }
+  .triangle-section h2 { font-family: var(--font-display); font-size: clamp(28px, 4vw, 44px); font-weight: 300; color: var(--cream); letter-spacing: -0.02em; margin-bottom: 56px; }
+  .triangle-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; }
+  .tri-svg { width: 100%; max-width: 320px; display: block; margin: 0 auto; }
+
+  .score-bars { display: flex; flex-direction: column; gap: 32px; }
+  .sbi-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; }
+  .sbi-label { font-family: var(--font-display); font-size: 17px; font-weight: 400; }
+  .sbi-label.atraer { color: var(--rust-mid); }
+  .sbi-label.confiar { color: #7ECFE4; }
+  .sbi-label.fidelizar { color: #7ECBA1; }
+  .sbi-pct { font-size: 13px; font-weight: 300; color: rgba(245,240,232,0.4); }
+  .sbi-track { height: 1px; background: rgba(255,255,255,0.1); }
+  .sbi-fill { height: 1px; width: 0%; transition: width 1.2s ease; }
+  .sbi-fill.atraer { background: var(--rust-mid); }
+  .sbi-fill.confiar { background: #7ECFE4; }
+  .sbi-fill.fidelizar { background: #7ECBA1; }
+  .sbi-sub { font-size: 12px; font-weight: 300; color: rgba(245,240,232,0.3); margin-top: 8px; }
+
+  /* DIAG CARDS */
+  .diag-cards-section { background: var(--cream-dark); padding: 80px 48px; }
+  .diag-section-label { font-size: 11px; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; color: var(--rust); margin-bottom: 12px; display: flex; align-items: center; gap: 10px; }
+  .diag-section-label::before { content: ''; display: block; width: 24px; height: 1px; background: var(--rust); }
+  .diag-cards-section h2 { font-family: var(--font-display); font-size: clamp(28px, 4vw, 44px); font-weight: 300; letter-spacing: -0.02em; margin-bottom: 48px; }
+  .diag-cards { display: flex; flex-direction: column; gap: 2px; }
+  .diag-card { background: var(--white); padding: 40px 44px; border-left: 3px solid; display: grid; grid-template-columns: 160px 1fr; gap: 48px; align-items: start; }
+  .diag-card.atraer { border-left-color: var(--rust); }
+  .diag-card.confiar { border-left-color: var(--teal); }
+  .diag-card.fidelizar { border-left-color: var(--purple); }
+  .diag-vertex-tag { font-size: 10px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 10px; }
+  .diag-vertex-tag.atraer { color: var(--rust); }
+  .diag-vertex-tag.confiar { color: var(--teal); }
+  .diag-vertex-tag.fidelizar { color: var(--purple); }
+  .diag-score-big { font-family: var(--font-display); font-size: 56px; font-weight: 300; line-height: 1; letter-spacing: -0.04em; color: var(--ink); }
+  .diag-level { display: inline-block; font-size: 11px; font-weight: 500; padding: 4px 10px; border-radius: 20px; margin-top: 12px; }
+  .diag-level.critical { background: var(--rust-light); color: #712B13; }
+  .diag-level.warning { background: #FAEEDA; color: #633806; }
+  .diag-level.ok { background: var(--teal-light); color: #085041; }
+  .diag-card-h { font-family: var(--font-display); font-size: 22px; font-weight: 400; margin-bottom: 12px; letter-spacing: -0.01em; }
+  .diag-card-p { font-size: 14px; font-weight: 300; color: var(--ink-soft); line-height: 1.75; }
+  .diag-action { margin-top: 18px; padding-top: 18px; border-top: 1px solid var(--sand); font-size: 14px; color: var(--rust); font-family: var(--font-display); font-style: italic; }
+
+  /* NEXT STEP */
+  .next-step { background: var(--rust); padding: 100px 48px; text-align: center; }
+  .next-step h2 { font-family: var(--font-display); font-size: clamp(36px, 5vw, 60px); font-weight: 300; color: var(--white); line-height: 1.1; letter-spacing: -0.03em; margin: 0 auto 20px; max-width: 580px; }
+  .next-step h2 em { font-style: italic; }
+  .next-step p { font-size: 17px; font-weight: 300; color: rgba(253,252,250,0.7); margin: 0 auto 44px; max-width: 460px; line-height: 1.7; }
+  .btn-white { background: var(--white); color: var(--rust); padding: 16px 40px; border-radius: 2px; font-size: 13px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; text-decoration: none; display: inline-block; transition: all 0.2s; border: none; cursor: pointer; }
+  .btn-white:hover { transform: translateY(-2px); }
+  .next-note { margin-top: 20px; font-size: 13px; color: rgba(253,252,250,0.4); font-family: var(--font-display); font-style: italic; }
+
+  /* REPORT */
+  .report-section { background: var(--ink); padding: 48px; }
+  .report-toggle { font-size: 11px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(245,240,232,0.25); background: none; border: 1px solid rgba(255,255,255,0.1); padding: 8px 18px; cursor: pointer; transition: all 0.2s; border-radius: 2px; }
+  .report-toggle:hover { color: var(--rust-mid); border-color: var(--rust-mid); }
+  .report-pre { display: none; margin-top: 24px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.07); padding: 32px; font-family: 'Courier New', monospace; font-size: 12px; color: rgba(245,240,232,0.5); line-height: 1.9; white-space: pre-wrap; }
+  .report-pre.visible { display: block; }
+
+  footer { background: var(--ink); padding: 40px 48px; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.06); }
+  .flogo { font-family: var(--font-display); font-size: 16px; font-weight: 700; color: var(--cream); }
+  .flogo span { color: var(--rust-mid); }
+  .fcopy { font-size: 13px; font-weight: 300; color: rgba(245,240,232,0.25); }
+
+  @media (max-width: 800px) {
+    nav { padding: 16px 24px; }
+    .hero, .form-area, .results-hero { padding-left: 24px; padding-right: 24px; }
+    .triangle-section, .diag-cards-section, .next-step, .report-section { padding-left: 24px; padding-right: 24px; }
+    .triangle-grid { grid-template-columns: 1fr; gap: 40px; }
+    .diag-card { grid-template-columns: 1fr; gap: 16px; }
+    .input-row { grid-template-columns: 1fr; }
+    .hero-meta { flex-direction: column; gap: 16px; }
+    footer { padding: 28px 24px; flex-direction: column; gap: 10px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="progress-wrap"><div class="progress-bar" id="progress-bar"></div></div>
+
+<nav>
+  <div class="nav-logo">The Tune-Up<span> Program</span></div>
+  <div class="nav-tag">Diagnóstico previo a la llamada</div>
+</nav>
+
+<!-- ============ FORM SCREEN ============ -->
+<div id="form-screen">
+
+  <section class="hero">
+    <div class="hero-eyebrow">The Tune-Up Program · Diagnóstico</div>
+    <h1 class="hero-headline fade-in">Antes de hablar,<br>necesito saber<br>cómo estás <em>tú.</em></h1>
+    <p class="hero-sub fade-in">Responde con honestidad. Cuanto más preciso seas, más útil es la llamada — y antes vamos al grano.</p>
+    <div class="hero-meta fade-in">
+      <div class="meta-item"><strong>12 preguntas</strong><span>Menos de 5 minutos</span></div>
+      <div class="meta-item"><strong>3 áreas</strong><span>Captar · Impresionar · Fidelizar</span></div>
+      <div class="meta-item"><strong>Confidencial</strong><span>Solo lo veo yo</span></div>
+    </div>
+  </section>
+
+  <div class="form-area">
+
+    <!-- DATOS BÁSICOS -->
+    <div class="diag-section fade-in">
+      <div class="section-header">
+        <div class="vertex-pill info">Tu taller</div>
+        <div class="section-header-text"><h2>Datos básicos</h2><p>Para personalizar el diagnóstico</p></div>
+      </div>
+      <div class="question" style="margin-bottom:20px;">
+        <label><span class="q-num">01 —</span> ¿Cómo te llamas y cómo se llama tu taller?</label>
+        <div class="input-row">
+          <div class="fg"><label>Tu nombre</label><input type="text" class="text-input" id="nombre" placeholder="Pedro García"></div>
+          <div class="fg"><label>Nombre del taller</label><input type="text" class="text-input" id="taller" placeholder="Taller García"></div>
+        </div>
+      </div>
+      <div class="question">
+        <label><span class="q-num">02 —</span> ¿Cuántos mecánicos trabajáis en total (incluido tú)?</label>
+        <div class="options" data-q="mecanicos" data-v="info">
+          <label class="option"><input type="radio" name="mecanicos" value="Solo yo"><div class="opt-dot"></div><span class="opt-text">Solo yo</span></label>
+          <label class="option"><input type="radio" name="mecanicos" value="Yo + 1 mecánico"><div class="opt-dot"></div><span class="opt-text">Yo + 1 mecánico</span></label>
+          <label class="option"><input type="radio" name="mecanicos" value="3–5 personas"><div class="opt-dot"></div><span class="opt-text">3–5 personas</span></label>
+          <label class="option"><input type="radio" name="mecanicos" value="Más de 5"><div class="opt-dot"></div><span class="opt-text">Más de 5</span></label>
+        </div>
+      </div>
+      <div class="question">
+        <label><span class="q-num">03 —</span> ¿Cuántos años llevas con el taller abierto?</label>
+        <div class="options" data-q="antiguedad" data-v="info">
+          <label class="option"><input type="radio" name="antiguedad" value="Menos de 1 año"><div class="opt-dot"></div><span class="opt-text">Menos de 1 año</span></label>
+          <label class="option"><input type="radio" name="antiguedad" value="1–3 años"><div class="opt-dot"></div><span class="opt-text">1–3 años</span></label>
+          <label class="option"><input type="radio" name="antiguedad" value="3–10 años"><div class="opt-dot"></div><span class="opt-text">3–10 años</span></label>
+          <label class="option"><input type="radio" name="antiguedad" value="Más de 10 años"><div class="opt-dot"></div><span class="opt-text">Más de 10 años</span></label>
+        </div>
+      </div>
+    </div>
+
+    <!-- CAPTAR -->
+    <div class="diag-section fade-in">
+      <div class="section-header">
+        <div class="vertex-pill atraer">Captar</div>
+        <div class="section-header-text"><h2>¿Te encuentran los clientes?</h2><p>Posicionamiento · Visibilidad · Captación</p></div>
+      </div>
+      <div class="question">
+        <label><span class="q-num">04 —</span> ¿De dónde vienen la mayoría de tus clientes nuevos?</label>
+        <div class="options" data-q="atraer_1" data-v="atraer" data-scored="1">
+          <label class="option"><input type="radio" name="atraer_1" value="0"><div class="opt-dot"></div><span class="opt-text">Solo boca a boca, sin hacer nada activo</span><span class="opt-badge badge-gap">Punto de partida</span></label>
+          <label class="option"><input type="radio" name="atraer_1" value="1"><div class="opt-dot"></div><span class="opt-text">Tengo Google Business pero no lo trabajo</span><span class="opt-badge badge-warn">La mayoría aquí</span></label>
+          <label class="option"><input type="radio" name="atraer_1" value="2"><div class="opt-dot"></div><span class="opt-text">Presencia online activa (redes, reseñas, Google trabajado)</span><span class="opt-badge badge-warn">Objetivo próximo</span></label>
+          <label class="option"><input type="radio" name="atraer_1" value="3"><div class="opt-dot"></div><span class="opt-text">Publicidad de pago o sistema activo de captación</span><span class="opt-badge badge-ok">Nivel avanzado</span></label>
+        </div>
+      </div>
+      <div class="question">
+        <label><span class="q-num">05 —</span> ¿Cómo gestionas las citas cuando un cliente contacta?</label>
+        <div class="options" data-q="atraer_2" data-v="atraer" data-scored="1">
+          <label class="option"><input type="radio" name="atraer_2" value="0"><div class="opt-dot"></div><span class="opt-text">Por teléfono cuando puedo atender, sin sistema</span><span class="opt-badge badge-gap">Punto de partida</span></label>
+          <label class="option"><input type="radio" name="atraer_2" value="1"><div class="opt-dot"></div><span class="opt-text">WhatsApp + libreta, pero sin protocolo fijo</span><span class="opt-badge badge-warn">La mayoría aquí</span></label>
+          <label class="option"><input type="radio" name="atraer_2" value="2"><div class="opt-dot"></div><span class="opt-text">Proceso definido de primera respuesta</span><span class="opt-badge badge-warn">Objetivo próximo</span></label>
+          <label class="option"><input type="radio" name="atraer_2" value="3"><div class="opt-dot"></div><span class="opt-text">Sistema de citas con confirmación automática</span><span class="opt-badge badge-ok">Nivel avanzado</span></label>
+        </div>
+      </div>
+      <div class="question">
+        <label><span class="q-num">06 —</span> Si alguien pasa por delante de tu taller hoy, ¿qué ve?</label>
+        <div class="options" data-q="atraer_3" data-v="atraer" data-scored="1">
+          <label class="option"><input type="radio" name="atraer_3" value="0"><div class="opt-dot"></div><span class="opt-text">Un taller más, sin nada que llame la atención</span><span class="opt-badge badge-gap">Punto de partida</span></label>
+          <label class="option"><input type="radio" name="atraer_3" value="1"><div class="opt-dot"></div><span class="opt-text">Rótulo y nombre, pero nada más</span><span class="opt-badge badge-warn">La mayoría aquí</span></label>
+          <label class="option"><input type="radio" name="atraer_3" value="2"><div class="opt-dot"></div><span class="opt-text">Imagen cuidada, taller limpio y ordenado desde fuera</span><span class="opt-badge badge-warn">Objetivo próximo</span></label>
+          <label class="option"><input type="radio" name="atraer_3" value="3"><div class="opt-dot"></div><span class="opt-text">Imagen profesional con diferenciación visible</span><span class="opt-badge badge-ok">Nivel avanzado</span></label>
+        </div>
+      </div>
+    </div>
+
+    <!-- IMPRESIONAR -->
+    <div class="diag-section fade-in">
+      <div class="section-header">
+        <div class="vertex-pill confiar">Impresionar</div>
+        <div class="section-header-text"><h2>¿El cliente percibe el valor que das?</h2><p>Procesos · Organización · Experiencia del cliente</p></div>
+      </div>
+      <div class="question">
+        <label><span class="q-num">07 —</span> ¿Cómo controlas los coches que tienes en el taller ahora mismo?</label>
+        <div class="options" data-q="confiar_1" data-v="confiar" data-scored="1">
+          <label class="option"><input type="radio" name="confiar_1" value="0"><div class="opt-dot"></div><span class="opt-text">De cabeza, o con una libreta sin estructura</span><span class="opt-badge badge-gap">Punto de partida</span></label>
+          <label class="option"><input type="radio" name="confiar_1" value="1"><div class="opt-dot"></div><span class="opt-text">Tengo algo apuntado pero sin control de tiempos o estado</span><span class="opt-badge badge-warn">La mayoría aquí</span></label>
+          <label class="option"><input type="radio" name="confiar_1" value="2"><div class="opt-dot"></div><span class="opt-text">Órdenes de trabajo o software básico</span><span class="opt-badge badge-warn">Objetivo próximo</span></label>
+          <label class="option"><input type="radio" name="confiar_1" value="3"><div class="opt-dot"></div><span class="opt-text">Sistema completo con estado, tiempos y responsable por coche</span><span class="opt-badge badge-ok">Nivel avanzado</span></label>
+        </div>
+      </div>
+      <div class="question">
+        <label><span class="q-num">08 —</span> ¿Puede tu equipo trabajar con normalidad si tú no estás?</label>
+        <div class="options" data-q="confiar_2" data-v="confiar" data-scored="1">
+          <label class="option"><input type="radio" name="confiar_2" value="0"><div class="opt-dot"></div><span class="opt-text">No, todo depende de mí</span><span class="opt-badge badge-gap">Punto de partida</span></label>
+          <label class="option"><input type="radio" name="confiar_2" value="1"><div class="opt-dot"></div><span class="opt-text">Pueden continuar, pero no iniciar nada nuevo</span><span class="opt-badge badge-warn">La mayoría aquí</span></label>
+          <label class="option"><input type="radio" name="confiar_2" value="2"><div class="opt-dot"></div><span class="opt-text">Sí, con alguna consulta puntual</span><span class="opt-badge badge-warn">Objetivo próximo</span></label>
+          <label class="option"><input type="radio" name="confiar_2" value="3"><div class="opt-dot"></div><span class="opt-text">Sí, tienen procesos claros y trabajan con autonomía</span><span class="opt-badge badge-ok">Nivel avanzado</span></label>
+        </div>
+      </div>
+      <div class="question">
+        <label><span class="q-num">09 —</span> Cuando un cliente llama para preguntar por su coche, ¿qué pasa?</label>
+        <div class="options" data-q="confiar_3" data-v="confiar" data-scored="1">
+          <label class="option"><input type="radio" name="confiar_3" value="0"><div class="opt-dot"></div><span class="opt-text">Tengo que ir a mirar o preguntar al mecánico</span><span class="opt-badge badge-gap">Punto de partida</span></label>
+          <label class="option"><input type="radio" name="confiar_3" value="1"><div class="opt-dot"></div><span class="opt-text">Más o menos sé el estado, pero sin datos exactos</span><span class="opt-badge badge-warn">La mayoría aquí</span></label>
+          <label class="option"><input type="radio" name="confiar_3" value="2"><div class="opt-dot"></div><span class="opt-text">Puedo consultarlo rápido y darle respuesta clara</span><span class="opt-badge badge-warn">Objetivo próximo</span></label>
+          <label class="option"><input type="radio" name="confiar_3" value="3"><div class="opt-dot"></div><span class="opt-text">El cliente recibe actualizaciones antes de preguntar</span><span class="opt-badge badge-ok">Nivel avanzado</span></label>
+        </div>
+      </div>
+    </div>
+
+    <!-- FIDELIZAR -->
+    <div class="diag-section fade-in">
+      <div class="section-header">
+        <div class="vertex-pill fidelizar">Fidelizar</div>
+        <div class="section-header-text"><h2>¿Vuelven y te recomiendan?</h2><p>Seguimiento · Retención · Reseñas</p></div>
+      </div>
+      <div class="question">
+        <label><span class="q-num">10 —</span> ¿Qué haces después de entregar el coche al cliente?</label>
+        <div class="options" data-q="fidelizar_1" data-v="fidelizar" data-scored="1">
+          <label class="option"><input type="radio" name="fidelizar_1" value="0"><div class="opt-dot"></div><span class="opt-text">Nada, el cliente se va y ya está</span><span class="opt-badge badge-gap">Punto de partida</span></label>
+          <label class="option"><input type="radio" name="fidelizar_1" value="1"><div class="opt-dot"></div><span class="opt-text">A veces llamo si fue un trabajo importante, sin sistema</span><span class="opt-badge badge-warn">La mayoría aquí</span></label>
+          <label class="option"><input type="radio" name="fidelizar_1" value="2"><div class="opt-dot"></div><span class="opt-text">Algún contacto post-entrega pero sin ser consistente</span><span class="opt-badge badge-warn">Objetivo próximo</span></label>
+          <label class="option"><input type="radio" name="fidelizar_1" value="3"><div class="opt-dot"></div><span class="opt-text">Seguimiento sistemático y recordatorios de mantenimiento</span><span class="opt-badge badge-ok">Nivel avanzado</span></label>
+        </div>
+      </div>
+      <div class="question">
+        <label><span class="q-num">11 —</span> ¿Cómo consigues reseñas de Google?</label>
+        <div class="options" data-q="fidelizar_2" data-v="fidelizar" data-scored="1">
+          <label class="option"><input type="radio" name="fidelizar_2" value="0"><div class="opt-dot"></div><span class="opt-text">No las pido, llegan por iniciativa del cliente</span><span class="opt-badge badge-gap">Punto de partida</span></label>
+          <label class="option"><input type="radio" name="fidelizar_2" value="1"><div class="opt-dot"></div><span class="opt-text">A veces pido verbalmente al entregar el coche</span><span class="opt-badge badge-warn">La mayoría aquí</span></label>
+          <label class="option"><input type="radio" name="fidelizar_2" value="2"><div class="opt-dot"></div><span class="opt-text">Tengo un QR o enlace, pero lo uso de forma irregular</span><span class="opt-badge badge-warn">Objetivo próximo</span></label>
+          <label class="option"><input type="radio" name="fidelizar_2" value="3"><div class="opt-dot"></div><span class="opt-text">Sistema activo: pido reseña siempre, con seguimiento</span><span class="opt-badge badge-ok">Nivel avanzado</span></label>
+        </div>
+      </div>
+      <div class="question">
+        <label><span class="q-num">12 —</span> ¿Los clientes que vienen una vez, vuelven?</label>
+        <div class="options" data-q="fidelizar_3" data-v="fidelizar" data-scored="1">
+          <label class="option"><input type="radio" name="fidelizar_3" value="0"><div class="opt-dot"></div><span class="opt-text">No lo sé, no tengo datos</span><span class="opt-badge badge-gap">Punto de partida</span></label>
+          <label class="option"><input type="radio" name="fidelizar_3" value="1"><div class="opt-dot"></div><span class="opt-text">Algunos sí, pero depende de si se acuerdan de nosotros</span><span class="opt-badge badge-warn">La mayoría aquí</span></label>
+          <label class="option"><input type="radio" name="fidelizar_3" value="2"><div class="opt-dot"></div><span class="opt-text">Tengo clientes fieles, pero no sé por qué vuelven exactamente</span><span class="opt-badge badge-warn">Objetivo próximo</span></label>
+          <label class="option"><input type="radio" name="fidelizar_3" value="3"><div class="opt-dot"></div><span class="opt-text">Tasa de retención alta y medida, con programa de fidelización</span><span class="opt-badge badge-ok">Nivel avanzado</span></label>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONTEXTO -->
+    <div class="diag-section fade-in">
+      <div class="section-header">
+        <div class="vertex-pill info">Contexto</div>
+        <div class="section-header-text"><h2>Una última cosa</h2><p>Para llegar preparado a la llamada</p></div>
+      </div>
+      <div class="question">
+        <label><span class="q-num">13 —</span> Si pudieras cambiar una sola cosa de tu taller mañana, ¿cuál sería?</label>
+        <textarea class="textarea-input" id="cambio" placeholder="Escribe aquí con libertad..."></textarea>
+      </div>
+      <div class="question">
+        <label><span class="q-num">14 —</span> ¿Hay algo más que quieras que sepa antes de nuestra llamada?</label>
+        <textarea class="textarea-input" id="extra" placeholder="Opcional..."></textarea>
+      </div>
+    </div>
+
+    <!-- SUBMIT -->
+    <div class="diag-section submit-section fade-in">
+      <p class="submit-note">Tus respuestas son confidenciales. Solo las veo yo — para preparar la llamada y darte el máximo valor desde el primer minuto.</p>
+      <button class="btn-primary" onclick="submitForm()">Enviar mi diagnóstico</button>
+      <p class="btn-note">Sin spam · Sin compromisos · Solo para preparar tu llamada</p>
+    </div>
+
+  </div>
+</div>
+
+<!-- ============ RESULTS SCREEN ============ -->
+<div id="results-screen">
+
+  <div class="results-hero">
+    <div class="results-eyebrow">The Tune-Up Program · Diagnóstico completado</div>
+    <h1 class="results-headline" id="results-headline">Tu taller tiene<br><em>recorrido real.</em></h1>
+    <p class="results-sub" id="results-sub">Hemos analizado tu taller en los tres vértices. Lo repasamos en la llamada.</p>
+  </div>
+
+  <div class="triangle-section">
+    <div class="tri-label">El triángulo de tu taller</div>
+    <h2>Así está tu taller<br>en los tres vértices</h2>
+    <div class="triangle-grid">
+      <div>
+        <svg class="tri-svg" viewBox="0 0 300 280" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <polygon points="150,24 276,244 24,244" stroke="rgba(255,255,255,0.07)" stroke-width="1.5" fill="none"/>
+          <circle id="dot-a" cx="150" cy="24" r="5" fill="#E8805A" opacity="0.4"/>
+          <circle id="dot-c" cx="276" cy="244" r="5" fill="#7ECFE4" opacity="0.4"/>
+          <circle id="dot-f" cx="24" cy="244" r="5" fill="#7ECBA1" opacity="0.4"/>
+          <text x="150" y="12" text-anchor="middle" font-family="'DM Sans'" font-size="9" fill="#E8805A" letter-spacing="1.5" font-weight="500">CAPTAR</text>
+          <text x="294" y="262" text-anchor="middle" font-family="'DM Sans'" font-size="9" fill="#7ECFE4" letter-spacing="1" font-weight="500">IMPRESIONAR</text>
+          <text x="16" y="262" text-anchor="middle" font-family="'DM Sans'" font-size="9" fill="#7ECBA1" letter-spacing="1.5" font-weight="500">FIDELIZAR</text>
+          <text id="ta" x="150" y="50" text-anchor="middle" font-family="'DM Sans'" font-size="14" fill="rgba(255,255,255,0.35)"></text>
+          <text id="tc" x="250" y="232" text-anchor="middle" font-family="'DM Sans'" font-size="14" fill="rgba(255,255,255,0.35)"></text>
+          <text id="tf" x="52" y="232" text-anchor="middle" font-family="'DM Sans'" font-size="14" fill="rgba(255,255,255,0.35)"></text>
+        </svg>
+      </div>
+      <div class="score-bars">
+        <div>
+          <div class="sbi-header"><span class="sbi-label atraer">Captar</span><span class="sbi-pct" id="pct-a">—</span></div>
+          <div class="sbi-track"><div class="sbi-fill atraer" id="bar-a"></div></div>
+          <div class="sbi-sub" id="sub-a">—</div>
+        </div>
+        <div>
+          <div class="sbi-header"><span class="sbi-label confiar">Impresionar</span><span class="sbi-pct" id="pct-c">—</span></div>
+          <div class="sbi-track"><div class="sbi-fill confiar" id="bar-c"></div></div>
+          <div class="sbi-sub" id="sub-c">—</div>
+        </div>
+        <div>
+          <div class="sbi-header"><span class="sbi-label fidelizar">Fidelizar</span><span class="sbi-pct" id="pct-f">—</span></div>
+          <div class="sbi-track"><div class="sbi-fill fidelizar" id="bar-f"></div></div>
+          <div class="sbi-sub" id="sub-f">—</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="diag-cards-section">
+    <div class="diag-section-label">Lo que encontramos</div>
+    <h2>Los tres vértices de <em id="taller-result">tu taller</em></h2>
+    <div class="diag-cards" id="diag-cards"></div>
+  </div>
+
+  <div class="next-step">
+    <h2 id="next-h">El problema no es<br>el trabajo.<br>Es la <em>forma</em> de trabajar.</h2>
+    <p id="next-p">En la llamada vamos directo a los puntos que más impacto tienen en tu caso. Sin rodeos. Sin teoría.</p>
+    <button class="btn-white" onclick="descargarHojaDeRuta()">↓ Descargar mi hoja de ruta personalizada</button>
+    <p class="next-note">The Tune-Up Program · Tu plan de trabajo · Antes de la llamada</p>
+  </div>
+
+  <div class="report-section">
+    <button class="report-toggle" onclick="document.getElementById('rp').classList.toggle('visible')">[ Informe completo — solo para uso interno ]</button>
+    <pre class="report-pre" id="rp"></pre>
+  </div>
+
+  <footer>
+    <div class="flogo">The Tune-Up<span> Program</span></div>
+    <div class="fcopy">© 2026 · España y Latinoamérica</div>
+  </footer>
+
+</div>
+
+<script>
+  // Fade in
+  const obs = new IntersectionObserver((entries) => {
+    entries.forEach((e,i) => { if(e.isIntersecting){ setTimeout(()=>e.target.classList.add('visible'),i*80); obs.unobserve(e.target); }});
+  },{threshold:0.1});
+  document.querySelectorAll('.fade-in').forEach(el=>obs.observe(el));
+
+  const answers = {};
+  const scores = { atraer:0, confiar:0, fidelizar:0 };
+
+  document.querySelectorAll('.options').forEach(grp => {
+    const v = grp.dataset.v;
+    const q = grp.dataset.q;
+    const scored = grp.dataset.scored === '1';
+    grp.querySelectorAll('.option').forEach(opt => {
+      opt.addEventListener('click', () => {
+        grp.querySelectorAll('.option').forEach(o => { o.className = 'option'; });
+        opt.classList.add('sel-' + v);
+        const radio = opt.querySelector('input');
+        radio.checked = true;
+        answers[q] = { v, score: scored ? parseInt(radio.value) : null, value: radio.value };
+        if(scored) recalc();
+        updateProgress();
+      });
+    });
+  });
+
+  function recalc() {
+    ['atraer','confiar','fidelizar'].forEach(v => {
+      const qs = Object.values(answers).filter(a => a.v===v && a.score!==null);
+      scores[v] = Math.round(qs.reduce((s,a)=>s+a.score,0)/(3*3)*100);
+    });
+  }
+
+  function updateProgress() {
+    const keys = ['atraer_1','atraer_2','atraer_3','confiar_1','confiar_2','confiar_3','fidelizar_1','fidelizar_2','fidelizar_3'];
+    document.getElementById('progress-bar').style.width = Math.round(keys.filter(k=>answers[k]).length/9*100)+'%';
+  }
+
+  function lvl(pct) {
+    if(pct<=25) return {label:'Punto de partida',cls:'critical'};
+    if(pct<=60) return {label:'En proceso',cls:'warning'};
+    return {label:'Sólido',cls:'ok'};
+  }
+
+  function sublabel(pct) {
+    if(pct<=25) return 'Área crítica — prioridad alta';
+    if(pct<=60) return 'Hay recorrido — prioridad media';
+    return 'Base sólida — seguir escalando';
+  }
+
+  const cardTexts = {
+    atraer: {
+      critical: { h:'El taller depende del boca a boca', p:'No tienes control sobre cuántos clientes nuevos entran cada mes. Si el boca a boca para, el trabajo para. Sin sistema de captación, el crecimiento es aleatorio.', a:'Primer paso: trabajar Google Business y pedir reseñas de forma sistemática.' },
+      warning:  { h:'Tienes presencia pero no un sistema', p:'Los clientes nuevos llegan por inercia, no por estrategia. Tienes la base, pero no la estás aprovechando de forma activa para que trabaje por ti.', a:'Siguiente paso: activar un proceso de reseñas y publicación regular.' },
+      ok:       { h:'Buena base de captación', p:'Tienes algo montado y funcionando. En la llamada vemos cómo escalar lo que ya funciona y cerrar los gaps que quedan.', a:'Oportunidad: añadir captación pagada para hacer el flujo predecible.' },
+    },
+    confiar: {
+      critical: { h:'El taller depende de ti para todo', p:'Sin sistema interno, tu equipo no puede funcionar sin ti. Los coches se retrasan y los clientes lo notan. Esto es lo que más agota a un dueño de taller.', a:'Primer paso: documentar el proceso de recepción y entrega de coches.' },
+      warning:  { h:'Control parcial, dependencia alta', p:'Tienes algo montado pero el control es inconsistente. Cuando no estás, la calidad varía. Los clientes lo perciben aunque no lo digan.', a:'Siguiente paso: proceso documentado que el equipo siga sin depender de ti.' },
+      ok:       { h:'Buena organización interna', p:'El taller funciona con cierta autonomía. Hay margen para sistematizar más y que el equipo gane independencia real del dueño.', a:'Oportunidad: comunicación proactiva con el cliente durante el proceso.' },
+    },
+    fidelizar: {
+      critical: { h:'Los clientes no vuelven por sistema', p:'Una vez que el coche sale, no hay contacto. No tienes base de datos activa ni proceso de seguimiento. El cliente más barato es el que ya tienes — y no lo estás usando.', a:'Primer paso: un mensaje de seguimiento a los 3 días de cada entrega.' },
+      warning:  { h:'Algunos vuelven, pero por inercia', p:'No tienes un sistema que garantice el retorno. Los clientes fieles lo son por hábito, no porque hagas algo activo para que vuelvan.', a:'Siguiente paso: recordatorios de revisión e ITV para tu base de clientes.' },
+      ok:       { h:'Clientes fieles con recorrido de mejora', p:'Tienes una base sólida. Con un sistema activo de seguimiento, esto se convierte en tu mayor ventaja competitiva frente a otros talleres.', a:'Oportunidad: programa de referidos para que tus clientes traigan a otros.' },
+    }
+  };
+
+  function submitForm() {
+    const nombre = document.getElementById('nombre').value.trim();
+    const taller = document.getElementById('taller').value.trim();
+    if(!nombre||!taller){alert('Por favor, indica tu nombre y el nombre de tu taller.');return;}
+    const req=['atraer_1','atraer_2','atraer_3','confiar_1','confiar_2','confiar_3','fidelizar_1','fidelizar_2','fidelizar_3'];
+    if(req.filter(k=>!answers[k]).length){alert('Faltan preguntas por responder.');return;}
+    recalc();
+    showResults(nombre,taller);
+  }
+
+  function showResults(nombre,taller) {
+    document.getElementById('form-screen').style.display='none';
+    document.getElementById('results-screen').classList.add('active');
+    window.scrollTo(0,0);
+
+    const min=Math.min(scores.atraer,scores.confiar,scores.fidelizar);
+    const em = min<=20?'oportunidad clara':min>=65?'buena base ya':'recorrido real';
+    document.getElementById('results-headline').innerHTML=`${nombre}, tu taller<br>tiene <em>${em}.</em>`;
+    document.getElementById('results-sub').textContent=`Hemos analizado ${taller} en los tres vértices del triángulo. Lo repasamos juntos en la llamada y construimos el plan exacto.`;
+    document.getElementById('taller-result').textContent=taller;
+
+    setTimeout(()=>{
+      ['atraer','confiar','fidelizar'].forEach(v=>{
+        const s=scores[v], sfx=v==='atraer'?'a':v==='confiar'?'c':'f';
+        document.getElementById('bar-'+sfx).style.width=s+'%';
+        document.getElementById('pct-'+sfx).textContent=s+'%';
+        document.getElementById('sub-'+sfx).textContent=sublabel(s);
+        document.getElementById('t'+sfx).textContent=s+'%';
+        document.getElementById('dot-'+sfx).style.opacity=0.25+(s/100)*0.75;
+      });
+    },350);
+
+    const container=document.getElementById('diag-cards');
+    container.innerHTML='';
+    [{v:'atraer',label:'Captar'},{v:'confiar',label:'Impresionar'},{v:'fidelizar',label:'Fidelizar'}].forEach(({v,label})=>{
+      const s=scores[v], l=lvl(s), t=cardTexts[v][l.cls];
+      const d=document.createElement('div');
+      d.className=`diag-card ${v}`;
+      d.innerHTML=`<div><div class="diag-vertex-tag ${v}">${label.toUpperCase()}</div><div class="diag-score-big">${s}%</div><span class="diag-level ${l.cls}">${l.label}</span></div><div><h3 class="diag-card-h">${t.h}</h3><p class="diag-card-p">${t.p}</p><p class="diag-action">→ ${t.a}</p></div>`;
+      container.appendChild(d);
+    });
+
+    const crit=Object.values(scores).filter(s=>s<=25).length;
+    if(crit>=2){document.getElementById('next-h').innerHTML='Hay trabajo.<br>Y eso es<br><em>buena noticia.</em>';document.getElementById('next-p').textContent='Tu taller tiene varios puntos de entrada claros. En la llamada vamos directo a los dos más urgentes y diseñamos el plan de los primeros 30 días.';}
+    else if(crit===1){document.getElementById('next-h').innerHTML='Una prioridad<br>muy <em>clara.</em>';document.getElementById('next-p').textContent='En la llamada la trabajamos a fondo y construimos el plan de implementación para tu caso concreto.';}
+
+    buildReport(nombre,taller);
+  }
+
+  function buildReport(nombre,taller) {
+    const now=new Date().toLocaleString('es-ES');
+    const cambio=document.getElementById('cambio').value.trim()||'—';
+    const extra=document.getElementById('extra').value.trim()||'—';
+    const mec=answers['mecanicos']?.value||'—';
+    const ant=answers['antiguedad']?.value||'—';
+    const scoreLabels=['Nivel 0 — Sin sistema','Nivel 1 — Básico sin proceso','Nivel 2 — En proceso','Nivel 3 — Sistema sólido'];
+    const qMap={atraer_1:'Origen de clientes nuevos',atraer_2:'Gestión de citas',atraer_3:'Imagen exterior',confiar_1:'Control de coches en taller',confiar_2:'Autonomía del equipo',confiar_3:'Respuesta al cliente',fidelizar_1:'Seguimiento post-entrega',fidelizar_2:'Sistema de reseñas',fidelizar_3:'Tasa de retención'};
+    let L=[
+      '══════════════════════════════════════════',
+      '  THE TUNE-UP PROGRAM — INFORME DIAGNÓSTICO',
+      '══════════════════════════════════════════',
+      `  Fecha      : ${now}`,
+      `  Cliente    : ${nombre}`,
+      `  Taller     : ${taller}`,
+      `  Mecánicos  : ${mec}`,
+      `  Antigüedad : ${ant}`,
+      '',
+      '──────────────────────────────────────────',
+      '  PUNTUACIONES',
+      '──────────────────────────────────────────',
+      `  CAPTAR      : ${scores.atraer}%  — ${lvl(scores.atraer).label.toUpperCase()}`,
+      `  IMPRESIONAR : ${scores.confiar}%  — ${lvl(scores.confiar).label.toUpperCase()}`,
+      `  FIDELIZAR   : ${scores.fidelizar}%  — ${lvl(scores.fidelizar).label.toUpperCase()}`,
+      '',
+      '──────────────────────────────────────────',
+      '  RESPUESTAS',
+      '──────────────────────────────────────────',
+    ];
+    Object.entries(qMap).forEach(([k,label])=>{
+      const a=answers[k];
+      if(a&&a.score!==null){
+        L.push(`  ${a.score<=1?'⚠ ':'✓ '}${label}`);
+        L.push(`     → ${scoreLabels[a.score]}`);
+      }
+    });
+    L=L.concat(['','──────────────────────────────────────────','  CONTEXTO LIBRE','──────────────────────────────────────────',`  ¿Qué cambiaría? "${cambio}"`,`  Notas: "${extra}"`, '','──────────────────────────────────────────','  PUNTOS CRÍTICOS','──────────────────────────────────────────']);
+    const crits=Object.entries(answers).filter(([k,v])=>v.score!==null&&v.score<=1&&qMap[k]).map(([k])=>`  ⚠  ${qMap[k]}`);
+    if(crits.length)crits.forEach(c=>L.push(c));else L.push('  Sin puntos críticos detectados.');
+    L.push('','══════════════════════════════════════════');
+    document.getElementById('rp').textContent=L.join('\n');
+  }
+
+  // ============================================================
+  // HOJA DE RUTA PERSONALIZADA — PDF
+  // ============================================================
+  function descargarHojaDeRuta() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    const W = 210, H = 297;
+    const mg = 20; // margen
+    const col = W - mg*2; // ancho útil
+
+    // Paleta
+    const CREAM   = [245,240,232];
+    const INK     = [26,23,20];
+    const INK_S   = [61,56,48];
+    const RUST    = [196,68,10];
+    const RUST_L  = [245,232,224];
+    const TEAL    = [29,158,117];
+    const TEAL_L  = [225,245,238];
+    const PURPLE  = [83,74,183];
+    const PURPLE_L= [238,237,254];
+    const SAND    = [212,201,176];
+    const WARN_L  = [250,238,218];
+    const WHITE   = [253,252,250];
+
+    const nombre = document.getElementById('nombre').value.trim() || 'Tu taller';
+    const taller = document.getElementById('taller').value.trim() || '';
+    const cambio = document.getElementById('cambio').value.trim() || '';
+
+    // Datos de vértices
+    const vertexData = [
+      { key:'atraer',   label:'Captar',       score: scores.atraer,   color: RUST,   light: RUST_L },
+      { key:'confiar',  label:'Impresionar',  score: scores.confiar,  color: TEAL,   light: TEAL_L },
+      { key:'fidelizar',label:'Fidelizar',    score: scores.fidelizar,color: PURPLE, light: PURPLE_L },
+    ];
+
+    // Mapa de módulos por punto débil (score ≤ 25 = crítico, ≤ 60 = en proceso)
+    const modulosPorVertex = {
+      atraer: {
+        critical: {
+          titulo: 'Empezamos por hacerte visible',
+          modulos: [
+            { num:'6', nombre:'Visibilidad y captación activa', desc:'Tu taller no aparece donde te buscan. Trabajamos Google Business, reseñas y presencia online desde cero.' }
+          ]
+        },
+        warning: {
+          titulo: 'Activamos lo que ya tienes',
+          modulos: [
+            { num:'6', nombre:'Visibilidad y captación activa', desc:'Tienes base pero no la estás aprovechando. Activamos el sistema de reseñas y publicación regular.' }
+          ]
+        },
+        ok: {
+          titulo: 'Escalamos tu captación',
+          modulos: [
+            { num:'6', nombre:'Visibilidad y captación activa', desc:'Tu captación funciona. Vemos cómo hacerla predecible y añadir captación pagada si tiene sentido.' }
+          ]
+        }
+      },
+      confiar: {
+        critical: {
+          titulo: 'Construimos el proceso de principio a fin',
+          modulos: [
+            { num:'1', nombre:'Orden y zonas del taller',        desc:'Sin orden, ningún proceso funciona. Definimos zonas, materiales y flujo de trabajo interno.' },
+            { num:'2', nombre:'Recepción activa',                desc:'El momento en que el cliente entra decide si confía o no. Instalamos el proceso de 5 pasos.' },
+            { num:'3', nombre:'Control de tiempos y rentabilidad',desc:'Sin datos de horas, no sabes si ganas o pierdes. Empezamos a medir desde el primer coche.' },
+            { num:'4', nombre:'El equipo aplica',                desc:'El proceso no puede depender solo de ti. Instalamos los hábitos en el equipo.' },
+          ]
+        },
+        warning: {
+          titulo: 'Consolidamos el proceso interno',
+          modulos: [
+            { num:'2', nombre:'Recepción activa',                desc:'El proceso de entrada necesita sistematizarse. El cliente tiene que sentir que todo está bajo control.' },
+            { num:'3', nombre:'Control de tiempos y rentabilidad',desc:'El control existe pero es inconsistente. Lo convertimos en rutina medible.' },
+            { num:'4', nombre:'El equipo aplica',                desc:'El equipo necesita procesos claros para funcionar sin depender de ti en todo.' },
+          ]
+        },
+        ok: {
+          titulo: 'Optimizamos lo que ya funciona',
+          modulos: [
+            { num:'3', nombre:'Control de tiempos y rentabilidad',desc:'Tienes control. Ahora lo convertimos en datos que te digan exactamente dónde ganar más.' },
+            { num:'4', nombre:'El equipo aplica',                desc:'El equipo trabaja. Vemos cómo darle más autonomía real sin perder calidad.' },
+          ]
+        }
+      },
+      fidelizar: {
+        critical: {
+          titulo: 'Activamos a los clientes que ya tienes',
+          modulos: [
+            { num:'5', nombre:'Seguimiento post-entrega y reseñas', desc:'Una vez que el coche sale, no vuelves a saber nada. Instalamos el sistema de seguimiento y reseñas.' }
+          ]
+        },
+        warning: {
+          titulo: 'Convertimos clientes en fieles',
+          modulos: [
+            { num:'5', nombre:'Seguimiento post-entrega y reseñas', desc:'Algunos vuelven, pero por inercia. Instalamos el proceso para que sea sistemático.' }
+          ]
+        },
+        ok: {
+          titulo: 'Convertimos fieles en embajadores',
+          modulos: [
+            { num:'5', nombre:'Seguimiento post-entrega y reseñas', desc:'Tienes clientes fieles. Los convertimos en fuente activa de nuevos clientes.' }
+          ]
+        }
+      }
+    };
+
+    // Frases personalizadas de apertura según perfil general
+    const minScore = Math.min(scores.atraer, scores.confiar, scores.fidelizar);
+    const critCount = vertexData.filter(v => v.score <= 25).length;
+    let frasePerfil, subPerfil;
+    if (critCount >= 2) {
+      frasePerfil = 'Tu taller tiene varios puntos de entrada claros.';
+      subPerfil = 'Eso es buena noticia — significa que hay recorrido real en poco tiempo. Vamos por orden, sin intentar arreglar todo a la vez.';
+    } else if (critCount === 1) {
+      frasePerfil = 'Hay una prioridad muy clara en tu diagnóstico.';
+      subPerfil = 'El resto tiene base. Nos enfocamos en el punto crítico primero y construimos desde ahí.';
+    } else {
+      frasePerfil = 'Tu taller tiene una base sólida.';
+      subPerfil = 'El trabajo es optimizar lo que ya funciona y cerrar los gaps que quedan. Hay recorrido real.';
+    }
+
+    // ── HELPERS ──────────────────────────────────────────────
+    function setFont(size, weight, color) {
+      doc.setFontSize(size);
+      doc.setFont('helvetica', weight === 'bold' ? 'bold' : weight === 'italic' ? 'italic' : 'normal');
+      doc.setTextColor(...(color || INK));
+    }
+    function rect(x,y,w,h,color) {
+      doc.setFillColor(...color);
+      doc.rect(x,y,w,h,'F');
+    }
+    function hline(x,y,w,color,thick) {
+      doc.setDrawColor(...(color||SAND));
+      doc.setLineWidth(thick||0.2);
+      doc.line(x,y,x+w,y);
+    }
+    function wrapText(text, x, y, maxW, lineH, size, weight, color) {
+      setFont(size||9, weight||'normal', color||INK_S);
+      const lines = doc.splitTextToSize(text, maxW);
+      doc.text(lines, x, y);
+      return y + lines.length * lineH;
+    }
+
+    // ── PÁGINA 1: PORTADA ─────────────────────────────────────
+    rect(0, 0, W, H, CREAM);
+
+    // Banda superior rust
+    rect(0, 0, W, 6, RUST);
+
+    // Eyebrow
+    setFont(7.5, 'normal', RUST);
+    doc.setCharSpace(1.5);
+    doc.text('THE TUNE-UP PROGRAM', mg, 22);
+    doc.setCharSpace(0);
+
+    // Título grande
+    setFont(34, 'normal', INK);
+    doc.setFont('helvetica','bold');
+    doc.text('Tu hoja de ruta.', mg, 46);
+    setFont(34, 'normal', RUST);
+    doc.setFont('helvetica','bolditalic');
+    doc.text('Personalizada.', mg, 60);
+
+    // Subtítulo
+    setFont(10, 'normal', INK_S);
+    const introLines = doc.splitTextToSize(`Este documento es tuyo. Recoge exactamente en qué punto está ${taller || 'tu taller'} hoy y el camino que vamos a recorrer juntos — módulo a módulo, sin saltarnos pasos.`, col);
+    doc.text(introLines, mg, 76);
+
+    // Línea
+    hline(mg, 92, col, SAND, 0.3);
+
+    // Datos del taller
+    setFont(7.5, 'normal', RUST);
+    doc.setCharSpace(1.2);
+    doc.text('TALLER', mg, 100);
+    doc.setCharSpace(0);
+    setFont(15, 'bold', INK);
+    doc.text(nombre, mg, 108);
+    if (taller) {
+      setFont(10, 'normal', INK_S);
+      doc.text(taller, mg, 115);
+    }
+
+    // Bloque de puntuaciones (3 columnas)
+    const boxY = 128, boxH = 38, boxW = (col - 8) / 3;
+    vertexData.forEach((v, i) => {
+      const bx = mg + i*(boxW+4);
+      rect(bx, boxY, boxW, boxH, v.light);
+      // Label vértice
+      setFont(6.5, 'normal', v.color);
+      doc.setCharSpace(1.2);
+      doc.text(v.label.toUpperCase(), bx+8, boxY+9);
+      doc.setCharSpace(0);
+      // Score grande
+      setFont(26, 'bold', INK);
+      doc.text(v.score+'%', bx+8, boxY+24);
+      // Nivel
+      const lv = lvl(v.score);
+      setFont(7, 'normal', v.color);
+      doc.text(lv.label, bx+8, boxY+32);
+    });
+
+    // Frase perfil
+    const pY = boxY + boxH + 14;
+    hline(mg, pY, col, SAND, 0.2);
+    setFont(11, 'bold', INK);
+    doc.text(frasePerfil, mg, pY+10);
+    setFont(9, 'normal', INK_S);
+    const subLines = doc.splitTextToSize(subPerfil, col);
+    doc.text(subLines, mg, pY+18);
+
+    // Si dejó comentario de "qué cambiaría"
+    if (cambio) {
+      const cY = pY + 34;
+      rect(mg, cY, col, 0.5, RUST);
+      setFont(7.5, 'normal', RUST);
+      doc.setCharSpace(1);
+      doc.text('LO QUE TÚ CAMBIARÍAS', mg, cY+9);
+      doc.setCharSpace(0);
+      setFont(9, 'italic', INK_S);
+      const cLines = doc.splitTextToSize(`"${cambio}"`, col);
+      doc.text(cLines, mg, cY+17);
+    }
+
+    // Footer página 1
+    hline(mg, H-20, col, SAND, 0.2);
+    setFont(7.5, 'normal', SAND);
+    doc.text('The Tune-Up Program', mg, H-13);
+    setFont(7.5, 'normal', SAND);
+    const today = new Date().toLocaleDateString('es-ES',{day:'2-digit',month:'long',year:'numeric'});
+    doc.text(today, W-mg, H-13, {align:'right'});
+
+    // ── PÁGINA 2: PLAN DE MÓDULOS ─────────────────────────────
+    doc.addPage();
+    rect(0, 0, W, H, WHITE);
+    rect(0, 0, W, 6, RUST);
+
+    // Header
+    setFont(7.5, 'normal', RUST);
+    doc.setCharSpace(1.5);
+    doc.text('EL PLAN', mg, 22);
+    doc.setCharSpace(0);
+    setFont(22, 'bold', INK);
+    doc.text('Lo que hacemos juntos,', mg, 32);
+    setFont(22, 'bolditalic', RUST);
+    doc.text('en tu caso concreto.', mg, 42);
+
+    setFont(9, 'normal', INK_S);
+    const planIntro = doc.splitTextToSize('El programa avanza módulo a módulo. No pasamos al siguiente hasta que el actual funciona en tu taller — no en teoría.', col);
+    doc.text(planIntro, mg, 52);
+    hline(mg, 60, col, SAND, 0.2);
+
+    let curY = 68;
+
+    // Orden de prioridad: primero los críticos
+    const ordered = [...vertexData].sort((a,b) => a.score - b.score);
+
+    ordered.forEach((v) => {
+      const lv = lvl(v.score).cls; // 'critical' | 'warning' | 'ok'
+      const plan = modulosPorVertex[v.key][lv];
+
+      // Comprobamos espacio — nueva página si falta
+      if (curY > H - 60) {
+        doc.addPage();
+        rect(0,0,W,H,WHITE);
+        rect(0,0,W,6,RUST);
+        curY = 22;
+      }
+
+      // Cabecera de vértice
+      rect(mg, curY, col, 8, v.color);
+      setFont(7, 'bold', WHITE);
+      doc.setCharSpace(1.2);
+      doc.text(v.label.toUpperCase(), mg+6, curY+5.5);
+      doc.setCharSpace(0);
+      setFont(7, 'normal', [255,255,255]);
+      doc.text(v.score+'%  ·  '+lvl(v.score).label, W-mg-4, curY+5.5, {align:'right'});
+      curY += 8;
+
+      // Subtítulo del bloque
+      rect(mg, curY, col, 8, v.light);
+      setFont(8, 'bold', INK);
+      doc.text(plan.titulo, mg+6, curY+5.5);
+      curY += 8;
+
+      // Módulos
+      plan.modulos.forEach((mod, idx) => {
+        if (curY > H - 40) {
+          doc.addPage();
+          rect(0,0,W,H,WHITE);
+          rect(0,0,W,6,RUST);
+          curY = 22;
+        }
+        const modBg = idx % 2 === 0 ? CREAM : WHITE;
+        // Reservamos espacio dinámico
+        const descLines = doc.splitTextToSize(mod.desc, col - 28);
+        const modH = Math.max(18, 14 + descLines.length * 4.5);
+        rect(mg, curY, col, modH, modBg);
+        // Número módulo
+        setFont(7.5, 'bold', v.color);
+        doc.text('MÓD. '+mod.num, mg+5, curY+7);
+        // Nombre
+        setFont(8.5, 'bold', INK);
+        doc.text(mod.nombre, mg+26, curY+7);
+        // Descripción
+        setFont(8, 'normal', INK_S);
+        doc.text(descLines, mg+26, curY+13);
+        curY += modH;
+      });
+
+      curY += 6; // espacio entre vértices
+    });
+
+    // ── PÁGINA 3: CÓMO FUNCIONA EL PROCESO ───────────────────
+    if (curY > H - 80) {
+      doc.addPage();
+      rect(0,0,W,H,WHITE);
+      rect(0,0,W,6,RUST);
+      curY = 22;
+    } else {
+      curY += 8;
+      hline(mg, curY, col, SAND, 0.3);
+      curY += 10;
+    }
+
+    // Si estamos en página 2 con espacio, continuamos. Si no, ya abrimos página 3 arriba.
+    if (curY > H - 80) {
+      doc.addPage();
+      rect(0,0,W,H,WHITE);
+      rect(0,0,W,6,RUST);
+      curY = 22;
+    }
+
+    setFont(7.5, 'normal', RUST);
+    doc.setCharSpace(1.5);
+    doc.text('CÓMO FUNCIONA', mg, curY);
+    doc.setCharSpace(0);
+    curY += 8;
+    setFont(16, 'bold', INK);
+    doc.text('El proceso, sin sorpresas.', mg, curY);
+    curY += 12;
+
+    const pasos = [
+      { n:'01', t:'Cada módulo tiene su tiempo',   d:'Trabajamos con llamadas de acompañamiento cada dos semanas. Entre llamadas, tú aplicas en el taller real.' },
+      { n:'02', t:'No avanzamos hasta que funciona',d:'Si el módulo no está consolidado, no pasamos al siguiente. Es un proceso, no un curso.' },
+      { n:'03', t:'Extensiones de módulo si hacen falta', d:'Si necesitas más tiempo en algún módulo, lo activamos a mitad del proceso — antes de que sea urgente.' },
+      { n:'04', t:'Medimos al inicio y al final',   d:'La primera llamada es diagnóstico. La última es medición de resultados. Vemos exactamente cuánto ha cambiado.' },
+    ];
+
+    pasos.forEach(p => {
+      if (curY > H - 30) {
+        doc.addPage();
+        rect(0,0,W,H,WHITE);
+        rect(0,0,W,6,RUST);
+        curY = 22;
+      }
+      const dLines = doc.splitTextToSize(p.d, col - 22);
+      const pH = 10 + dLines.length * 4.5;
+      rect(mg, curY, 14, pH, RUST_L);
+      setFont(10, 'bold', RUST);
+      doc.text(p.n, mg+7, curY + pH/2 + 3.5, {align:'center'});
+      setFont(8.5, 'bold', INK);
+      doc.text(p.t, mg+18, curY+7);
+      setFont(8, 'normal', INK_S);
+      doc.text(dLines, mg+18, curY+13);
+      curY += pH + 5;
+    });
+
+    // Cierre
+    curY += 6;
+    if (curY > H - 40) {
+      doc.addPage();
+      rect(0,0,W,H,WHITE);
+      rect(0,0,W,6,RUST);
+      curY = 22;
+    }
+    rect(mg, curY, col, 28, INK);
+    setFont(11, 'bolditalic', CREAM);
+    doc.text('Nos vemos en la llamada.', mg+8, curY+10);
+    setFont(8, 'normal', [180,170,155]);
+    const closeTxt = doc.splitTextToSize('Este diagnóstico es el punto de partida. La llamada es donde construimos el plan exacto para tu taller.', col-16);
+    doc.text(closeTxt, mg+8, curY+17);
+
+    // Footer última página
+    const totalPages = doc.getNumberOfPages();
+    for (let i = 1; i <= totalPages; i++) {
+      doc.setPage(i);
+      hline(mg, H-14, col, SAND, 0.2);
+      setFont(7, 'normal', SAND);
+      doc.text('The Tune-Up Program', mg, H-9);
+      doc.text(`${i} / ${totalPages}`, W-mg, H-9, {align:'right'});
+    }
+
+    doc.save(`hoja-de-ruta-${(taller||nombre).toLowerCase().replace(/\s+/g,'-')}.pdf`);
+  }
+</script>
+</body>
+</html>
